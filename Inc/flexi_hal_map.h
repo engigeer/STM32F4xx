@@ -171,7 +171,7 @@
 #define AUXOUTPUT3_PORT         GPIOA
 #define AUXOUTPUT3_PIN          6
 #if N_ABC_MOTORS != 2
-  #define AUXOUTPUT0_PWM_PORT_BASE        GPIOB
+  #define AUXOUTPUT0_PWM_PORT_BASE        GPIOB_BASE
   #define AUXOUTPUT0_PWM_PIN              14
 //  #define AUXOUTPUT6_PORT       GPIOB
 //  #define AUXOUTPUT6_PIN        14
