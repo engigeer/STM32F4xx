@@ -156,27 +156,34 @@
 #define SPINDLE_PWM_PIN         8
 
 // Define flood and mist coolant enable output pins.
-#define COOLANT_FLOOD_PORT      GPIOC
-#define COOLANT_FLOOD_PIN       9
+// #define COOLANT_FLOOD_PORT      GPIOC
+// #define COOLANT_FLOOD_PIN       9
+// #define COOLANT_MIST_PORT       GPIOA
+// #define COOLANT_MIST_PIN        7
+#define COOLANT_FLOOD_PORT      GPIOA
+#define COOLANT_FLOOD_PIN       4
 #define COOLANT_MIST_PORT       GPIOA
-#define COOLANT_MIST_PIN        7
+#define COOLANT_MIST_PIN        6
 #define COOLANT_OUTMODE         GPIO_BITBAND
 
 #define AUXOUTPUT0_PORT         GPIOB
 #define AUXOUTPUT0_PIN          13
-// #define AUXOUTPUT1_PORT         GPIOB
-// #define AUXOUTPUT1_PIN          0
-#define AUXOUTPUT0_PWM_PORT_BASE        GPIOB_BASE
-#define AUXOUTPUT0_PWM_PIN              0
-#define AUXOUTPUT2_PORT         GPIOA
-#define AUXOUTPUT2_PIN          4
-#define AUXOUTPUT3_PORT         GPIOA
-#define AUXOUTPUT3_PIN          6
+#define AUXOUTPUT1_PORT         GPIOB
+#define AUXOUTPUT1_PIN          0
+// #define AUXOUTPUT2_PORT         GPIOA
+// #define AUXOUTPUT2_PIN          4
+// #define AUXOUTPUT3_PORT         GPIOA
+// #define AUXOUTPUT3_PIN          6
+#define AUXOUTPUT2_PORT            GPIOC
+#define AUXOUTPUT2_PIN             9
+#define AUXOUTPUT0_PWM_PORT_BASE        GPIOA_BASE
+#define AUXOUTPUT0_PWM_PIN              7
+
 #if N_ABC_MOTORS != 2
-// #define AUXOUTPUT0_PWM_PORT_BASE        GPIOB_BASE
-// #define AUXOUTPUT0_PWM_PIN              14
- #define AUXOUTPUT6_PORT       GPIOB
- #define AUXOUTPUT6_PIN        14
+// #define AUXOUTPUT1_PWM_PORT_BASE        GPIOB_BASE
+// #define AUXOUTPUT1_PWM_PIN              14
+  #define AUXOUTPUT6_PORT       GPIOB
+  #define AUXOUTPUT6_PIN        14
   #define AUXOUTPUT7_PORT       GPIOB
   #define AUXOUTPUT7_PIN        15  
 #endif

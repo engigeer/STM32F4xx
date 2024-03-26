@@ -336,11 +336,16 @@
     #define AUXOUTPUT0_PWM_TIMER_CH    1
     #define AUXOUTPUT0_PWM_TIMER_INV   0
     #define AUXOUTPUT0_PWM_TIMER_AF    1
-  #elif AUXOUTPUT0_PWM_PIN == 7 // PA7 - TIM1_CH1N
-    #define AUXOUTPUT0_PWM_TIMER_N     1
-    #define AUXOUTPUT0_PWM_TIMER_CH    1
-    #define AUXOUTPUT0_PWM_TIMER_INV   1
-    #define AUXOUTPUT0_PWM_TIMER_AF    1
+  // #elif AUXOUTPUT0_PWM_PIN == 7 // PA7 - TIM1_CH1N
+    // #define AUXOUTPUT0_PWM_TIMER_N     1
+    // #define AUXOUTPUT0_PWM_TIMER_CH    1
+    // #define AUXOUTPUT0_PWM_TIMER_INV   1
+    // #define AUXOUTPUT0_PWM_TIMER_AF    1
+  #elif AUXOUTPUT0_PWM_PIN == 7 // PA7 - TIM3_CH2
+    #define AUXOUTPUT0_PWM_TIMER_N     3
+    #define AUXOUTPUT0_PWM_TIMER_CH    2
+    #define AUXOUTPUT0_PWM_TIMER_INV   0
+    #define AUXOUTPUT0_PWM_TIMER_AF    2
   #elif AUXOUTPUT0_PWM_PIN == 8 // PA8 - TIM1_CH1
     #define AUXOUTPUT0_PWM_TIMER_N     1
     #define AUXOUTPUT0_PWM_TIMER_CH    1
@@ -348,7 +353,7 @@
     #define AUXOUTPUT0_PWM_TIMER_AF    1
   #endif
 #elif AUXOUTPUT0_PWM_PORT_BASE == GPIOB_BASE
-  #if AUXOUTPUT0_PWM_PIN == 0 // PB14 - TIM1_CH2N
+  #if AUXOUTPUT0_PWM_PIN == 0 // PB0- TIM1_CH2N
     #define AUXOUTPUT0_PWM_TIMER_N     1
     #define AUXOUTPUT0_PWM_TIMER_CH    2
     #define AUXOUTPUT0_PWM_TIMER_INV   1
@@ -419,6 +424,17 @@
 #define AUXOUTPUT0_PWM_AF              timerAF(AUXOUTPUT0_PWM_TIMER_N, AUXOUTPUT0_PWM_TIMER_AF)
 #define AUXOUTPUT0_PWM_CLKEN           timerCLKEN(AUXOUTPUT0_PWM_TIMER_N)
 
+// AUX OUTPUT0 TIMER CONFLICT CHECKS
+#if AUXOUTPUT0_PWM_TIMER_N == SPINDLE_PWM_TIMER_N
+#error Timer conflict: AUX0 PWM and spindle PWM!
+#endif
+#if AUXOUTPUT0_PWM_TIMER_N == RPM_COUNTER_N || AUXOUTPUT0_PWM_TIMER_N == RPM_TIMER_N
+#error Timer conflict: AUX0 PWM and spindle sync!
+#endif
+#if AUXOUTPUT0_PWM_TIMER_N == PULSE2_TIMER_N
+#error Timer conflict: AUX0 PWM and step inject!
+#endif
+
 #endif // AUXOUTPUT0_PWM_PORT_BASE
 
 #ifdef AUXOUTPUT1_PWM_PORT_BASE
@@ -429,11 +445,16 @@
     #define AUXOUTPUT1_PWM_TIMER_CH    1
     #define AUXOUTPUT1_PWM_TIMER_INV   0
     #define AUXOUTPUT1_PWM_TIMER_AF    1
-  #elif AUXOUTPUT1_PWM_PIN == 7 // PA7 - TIM1_CH1N
-    #define AUXOUTPUT1_PWM_TIMER_N     1
-    #define AUXOUTPUT1_PWM_TIMER_CH    1
-    #define AUXOUTPUT1_PWM_TIMER_INV   1
-    #define AUXOUTPUT1_PWM_TIMER_AF    1
+  // #elif AUXOUTPUT1_PWM_PIN == 7 // PA7 - TIM1_CH1N
+    // #define AUXOUTPUT1_PWM_TIMER_N     1
+    // #define AUXOUTPUT1_PWM_TIMER_CH    1
+    // #define AUXOUTPUT1_PWM_TIMER_INV   1
+    // #define AUXOUTPUT1_PWM_TIMER_AF    1
+  #elif AUXOUTPUT1_PWM_PIN == 7 // PA7 - TIM3_CH2
+    #define AUXOUTPUT1_PWM_TIMER_N     3
+    #define AUXOUTPUT1_PWM_TIMER_CH    2
+    #define AUXOUTPUT1_PWM_TIMER_INV   0
+    #define AUXOUTPUT1_PWM_TIMER_AF    2
   #elif AUXOUTPUT1_PWM_PIN == 8 // PA8 - TIM1_CH1
     #define AUXOUTPUT1_PWM_TIMER_N     1
     #define AUXOUTPUT1_PWM_TIMER_CH    1
@@ -511,6 +532,17 @@
 #define AUXOUTPUT1_PWM_PORT            ((GPIO_TypeDef *)AUXOUTPUT1_PWM_PORT_BASE)
 #define AUXOUTPUT1_PWM_AF              timerAF(AUXOUTPUT1_PWM_TIMER_N, AUXOUTPUT1_PWM_TIMER_AF)
 #define AUXOUTPUT1_PWM_CLKEN           timerCLKEN(AUXOUTPUT1_PWM_TIMER_N)
+
+// AUX OUTPUT1 TIMER CONFLICT CHECKS
+#if AUXOUTPUT1_PWM_TIMER_N == SPINDLE_PWM_TIMER_N
+#error Timer conflict: AUX1 PWM and spindle PWM!
+#endif
+#if AUXOUTPUT1_PWM_TIMER_N == RPM_COUNTER_N || AUXOUTPUT1_PWM_TIMER_N == RPM_TIMER_N
+#error Timer conflict: AUX1 PWM and spindle sync!
+#endif
+#if AUXOUTPUT1_PWM_TIMER_N == PULSE2_TIMER_N
+#error Timer conflict: AUX1 PWM and step inject!
+#endif
 
 #endif // AUXOUTPUT1_PWM_PORT_BASE
 
