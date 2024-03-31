@@ -5,18 +5,18 @@
 
   Copyright (c) 2023 @nickshl & Terje Io
 
-  Grbl is free software: you can redistribute it and/or modify
+  GrblHAL is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Grbl is distributed in the hope that it will be useful,
+  GrblHAL is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+  along with GrblHAL. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* Pin Assignments:
@@ -60,7 +60,7 @@
 #define BOARD_NAME "Devtronic CNC Controller"
 #endif
 
-#define HAS_BOARD_INIT
+//#define HAS_BOARD_INIT
 
 #define SERIAL_PORT 1   // GPIOA: TX = 9, RX = 10
 #define I2C_PORT    1   // GPIOB: SCL = 8, SDA = 9
@@ -129,31 +129,26 @@
 #define AUXINPUT1_PIN           15
 #endif
 
+#define AUXOUTPUT3_PORT         GPIOA // Spindle PWM
+#define AUXOUTPUT3_PIN          8
+#define AUXOUTPUT4_PORT         GPIOB // Spindle direction
+#define AUXOUTPUT4_PIN          10
+#define AUXOUTPUT5_PORT         GPIOB // Spindle enable
+#define AUXOUTPUT5_PIN          2
+
 // Define driver spindle pins
-
-#if DRIVER_SPINDLE_PWM_ENABLE
-#define SPINDLE_PWM_PORT_BASE   GPIOA_BASE
-#define SPINDLE_PWM_PIN         8
-#else
-#define AUXOUTPUT2_PORT         GPIOA
-#define AUXOUTPUT2_PIN          8
-#endif
-
-#if DRIVER_SPINDLE_DIR_ENABLE
-#define SPINDLE_DIRECTION_PORT  GPIOB
-#define SPINDLE_DIRECTION_PIN   10
-#else
-#define AUXOUTPUT3_PORT         GPIOB
-#define AUXOUTPUT3_PIN          10
-#endif
-
 #if DRIVER_SPINDLE_ENABLE
-#define SPINDLE_ENABLE_PORT     GPIOB
-#define SPINDLE_ENABLE_PIN      2
-#else
-#define AUXOUTPUT4_PORT         GPIOB
-#define AUXOUTPUT4_PIN          2
+#define SPINDLE_ENABLE_PORT     AUXOUTPUT5_PORT
+#define SPINDLE_ENABLE_PIN      AUXOUTPUT5_PIN
+#if DRIVER_SPINDLE_PWM_ENABLE
+#define SPINDLE_PWM_PORT        AUXOUTPUT3_PORT
+#define SPINDLE_PWM_PIN         AUXOUTPUT3_PIN
 #endif
+#if DRIVER_SPINDLE_DIR_ENABLE
+#define SPINDLE_DIRECTION_PORT  AUXOUTPUT4_PORT
+#define SPINDLE_DIRECTION_PIN   AUXOUTPUT4_PIN
+#endif
+#endif //DRIVER_SPINDLE_ENABLE
 
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_PORT      GPIOC
@@ -168,18 +163,7 @@
 #define FEED_HOLD_PIN           7
 #define CYCLE_START_PORT        GPIOB
 #define CYCLE_START_PIN         6
-#if I2C_STROBE_ENABLE && !SAFETY_DOOR_ENABLE
-#define I2C_STROBE_PORT         GPIOA
-#define I2C_STROBE_PIN          1
-#else
-#define AUXINPUT0_PORT          GPIOA
-#define AUXINPUT0_PIN           1
-#endif
 #define CONTROL_INMODE          GPIO_BITBAND
-
-// Define probe switch input pin.
-#define PROBE_PORT              GPIOB
-#define PROBE_PIN               5
 
 // Spindle encoder pins.
 #if SPINDLE_ENCODER_ENABLE
@@ -190,21 +174,32 @@
 #define SPINDLE_PULSE_PORT      GPIOA
 #define SPINDLE_PULSE_PIN       15
 #else
-#define AUXINPUT2_PORT         GPIOB
-#define AUXINPUT2_PIN          4
-#define AUXINPUT3_PORT         GPIOB
-#define AUXINPUT3_PIN          3
-#define AUXINPUT4_PORT         GPIOA
-#define AUXINPUT4_PIN          15
+#define AUXINPUT2_PORT          GPIOB
+#define AUXINPUT2_PIN           4
+#define AUXINPUT3_PORT          GPIOB
+#define AUXINPUT3_PIN           3
+#define AUXINPUT4_PORT          GPIOA
+#define AUXINPUT4_PIN           15
 #endif
 
-#if SAFETY_DOOR_ENABLE && defined(AUXINPUT0_PORT)
+#define AUXINPUT0_PORT          GPIOA
+#define AUXINPUT0_PIN           1
+#define AUXINPUT5_PORT          GPIOB
+#define AUXINPUT5_PIN           5
+
+#if PROBE_ENABLE
+#define PROBE_PORT              AUXINPUT5_PORT
+#define PROBE_PIN               AUXINPUT5_PIN
+#endif
+
+#if SAFETY_DOOR_ENABLE
 #define SAFETY_DOOR_PORT        AUXINPUT0_PORT
 #define SAFETY_DOOR_PIN         AUXINPUT0_PIN
 #endif
 
-#if KEYPAD_ENABLE == 1 && SAFETY_DOOR_ENABLE
-#error I2C keypad not supported when safety door is enabled
+#if I2C_STROBE_ENABLE && !SAFETY_DOOR_ENABLE
+#define I2C_STROBE_PORT         AUXINPUT0_PORT
+#define I2C_STROBE_PIN          AUXINPUT0_PIN
 #endif
 
 #if SDCARD_ENABLE

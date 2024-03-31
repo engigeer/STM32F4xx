@@ -1,5 +1,5 @@
 /*
-  mks_robin_nano_v3.0_map.h - driver code for STM32F407 ARM processors
+  mks_eagle_map.h - driver code for STM32F407 ARM processors
 
   Part of grblHAL
 
@@ -20,11 +20,7 @@
   along with GrblHAL. If not, see <http://www.gnu.org/licenses/>.
 */
 #if N_ABC_MOTORS > 2
-#error "MKS ROBIN-NANO 3.0 supports 5 motors max."
-#endif
-
-#if TRINAMIC_ENABLE && N_GANGED > 0
-#error "MKS ROBIN-NANO 3.0 does not support ganged motors with Trinamic drivers."
+#error "MKS EAGLE supports 5 motors max."
 #endif
 
 #if IS_NUCLEO_DEVKIT
@@ -41,8 +37,8 @@
 #define SERIAL1_PORT    3   // GPIOB: TX = 10, RX = 11
 #endif
 
-#define BOARD_NAME "MKS ROBIN-NANO 3.0"
-#define BOARD_URL "https://github.com/makerbase-mks/MKS-Robin-Nano-V3.X"
+#define BOARD_NAME "MKS EAGLE"
+#define BOARD_URL "https://github.com/makerbase-mks/MKS-EAGLE"
 
 #undef I2C_ENABLE
 #define I2C_ENABLE      1
@@ -103,8 +99,8 @@
 #define M3_STEP_PIN             6
 #define M3_DIRECTION_PORT       GPIOD
 #define M3_DIRECTION_PIN        3
-#define M3_LIMIT_PORT           GPIOE
-#define M3_LIMIT_PIN            10
+#define M3_LIMIT_PORT           GPIOA                 //PW_DET
+#define M3_LIMIT_PIN            13
 #define M3_ENABLE_PORT          GPIOB
 #define M3_ENABLE_PIN           3
 #endif
@@ -122,32 +118,37 @@
 #define M4_ENABLE_PIN           3
 #endif
 
-#define AUXOUTPUT0_PORT         GPIOA // Spindle PWM, 3D touch
-#define AUXOUTPUT0_PIN          8
-#define AUXOUTPUT1_PORT         GPIOB // Spindle direction, FAN1
-#define AUXOUTPUT1_PIN          1
-#define AUXOUTPUT2_PORT         GPIOA // Spindle enable, HOTBED
-#define AUXOUTPUT2_PIN          0
-
 // Define driver spindle pins
-#if DRIVER_SPINDLE_ENABLE
-#define SPINDLE_ENABLE_PORT     AUXOUTPUT2_PORT
-#define SPINDLE_ENABLE_PIN      AUXOUTPUT2_PIN
-#if DRIVER_SPINDLE_PWM_ENABLE
-#define SPINDLE_PWM_PORT        AUXOUTPUT0_PORT
-#define SPINDLE_PWM_PIN         AUXOUTPUT0_PIN
+
+#if DRIVER_SPINDLE_PWM_ENABLE                               // 3D touch
+#define SPINDLE_PWM_PORT_BASE   GPIOA_BASE
+#define SPINDLE_PWM_PIN         8
+#else
+#define AUXOUTPUT0_PORT         GPIOA
+#define AUXOUTPUT0_PIN          8
 #endif
-#if DRIVER_SPINDLE_DIR_ENABLE
-#define SPINDLE_DIRECTION_PORT  AUXOUTPUT1_PORT
-#define SPINDLE_DIRECTION_PIN   AUXOUTPUT1_PIN
+
+#if DRIVER_SPINDLE_DIR_ENABLE                               // FAN2
+#define SPINDLE_DIRECTION_PORT  GPIOB
+#define SPINDLE_DIRECTION_PIN   1
+#else
+#define AUXOUTPUT1_PORT         GPIOB
+#define AUXOUTPUT1_PIN          1
 #endif
-#endif //DRIVER_SPINDLE_ENABLE
+
+#if DRIVER_SPINDLE_ENABLE                                   // HOTBED
+#define SPINDLE_ENABLE_PORT     GPIOA
+#define SPINDLE_ENABLE_PIN      0
+#else
+#define AUXOUTPUT2_PORT         GPIOA
+#define AUXOUTPUT2_PIN          0
+#endif
 
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_PORT      GPIOE
 #define COOLANT_FLOOD_PIN       5                           // HEATER 1
 #define COOLANT_MIST_PORT       GPIOB
-#define COOLANT_MIST_PIN        1                           // HEAT1
+#define COOLANT_MIST_PIN        1                           // FAN2
 
 // Define user-control controls (cycle start, reset, feed hold) input pins.
 #define RESET_PORT              GPIOC
@@ -158,14 +159,14 @@
 #define CYCLE_START_PORT        GPIOA
 #define CYCLE_START_PIN         10                          // When debugging with Nucleo-144
 #else
-#define CYCLE_START_PORT        GPIOD
-#define CYCLE_START_PIN         9                           // ???
+#define CYCLE_START_PORT        GPIOA
+#define CYCLE_START_PIN         4                           // MT_DET1
 #endif
 #define CONTROL_INMODE GPIO_BITBAND
 
-#define AUXINPUT0_PORT          GPIOG                       // EXP1 PG4
-#define AUXINPUT0_PIN           6
-#define AUXINPUT1_PORT          GPIOC
+#define AUXINPUT0_PORT          GPIOC                       // EXP1 PC5
+#define AUXINPUT0_PIN           5
+#define AUXINPUT1_PORT          GPIOC                       //Z+ Limit
 #define AUXINPUT1_PIN           4
 
 #if PROBE_ENABLE
@@ -203,17 +204,17 @@
 
 #ifdef  M3_AVAILABLE
 #define MOTOR_UARTM3_PORT       GPIOD
-#define MOTOR_UARTM3_PIN        4
+#define MOTOR_UARTM3_PIN        9
 #endif
 
 #ifdef  M4_AVAILABLE
 #define MOTOR_UARTM4_PORT       GPIOD
-#define MOTOR_UARTM4_PIN        9
+#define MOTOR_UARTM4_PIN        8
 #endif
 
 #ifdef  M5_AVAILABLE
 #define MOTOR_UARTM5_PORT       GPIOD
-#define MOTOR_UARTM5_PIN        8
+#define MOTOR_UARTM5_PIN        4
 #endif
 
 #endif // TRINAMIC_UART_ENABLE

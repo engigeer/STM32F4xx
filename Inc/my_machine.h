@@ -37,8 +37,10 @@
 //#define BOARD_BTT_SKR_20_DAC      // F407 based 3D Printer board, uses analog output (DAC) for spindle speed control
 //#define BOARD_FYSETC_S6           // F446 based 3D Printer board
 //#define BOARD_FLEXI_HAL           // F446 CNC board
+//#define BOARD_LONGBOARD32         // F412 Sienci SLB
 //#define BOARD_STM32F401_UNI       // F401 CNC board
 //#define BOARD_MKS_ROBIN_NANO_30   // F407 based 3D Printer board - untested!
+//#define BOARD_MKS_EAGLE           // F407 based 3D Printer board
 //#define BOARD_MY_MACHINE          // Add my_machine_map.h before enabling this!
 
 // WARNING: BOARD_BTT_SKR_20 may fry your Trinamic drivers due to bad hardware design.
@@ -60,7 +62,6 @@
 #if IS_NUCLEO_DEVKIT != 64 && !defined(USB_SERIAL_CDC) // The Nucleo boards has an off-chip UART to USB interface.
 #define USB_SERIAL_CDC         1 // Serial communication via native USB.
 #endif
-//#define SAFETY_DOOR_ENABLE   1 // Enable safety door input.
 //#define BLUETOOTH_ENABLE     2 // Set to 2 for HC-05 module. Requires and claims one auxillary input pin.
 // Spindle selection:
 // Up to four specific spindle drivers can be instantiated at a time
@@ -75,6 +76,9 @@
 // **********************
 //#define MODBUS_ENABLE        1 // Set to 1 for auto direction, 2 for direction signal on auxillary output pin.
 //#define _WIZCHIP_         5500 // Enables ethernet via WIZnet breakout connected via SPI. Set to 5500 for W5500 chip, 5105 for W5100S.
+//#define WEBUI_ENABLE         3 // Enable ESP3D-WEBUI plugin along with networking and SD card plugins.
+                                 // NOTE: Only fully compatible with F412 and F429 MCUs.
+//#define WEBUI_AUTH_ENABLE    1 // Enable ESP3D-WEBUI authentication.
 //#define SDCARD_ENABLE        1 // Run gcode programs from SD card. Set to 2 to enable YModem upload.
 //#define MPG_ENABLE           1 // Enable MPG interface. Requires a serial port and means to switch between normal and MPG mode.
                                  // 1: Mode switching is by handshake pin input unless the keypad plugin is enabled in mode 2 which
@@ -94,6 +98,10 @@
 //#define TRINAMIC_ENABLE   2130 // Trinamic TMC2130 stepper driver support.
 //#define TRINAMIC_ENABLE   5160 // Trinamic TMC5160 stepper driver support.
 //#define TRINAMIC_ENABLE   2209 // Trinamic TMC2209 stepper driver support.
+<<<<<<< HEAD
+=======
+//#define TRINAMIC_ENABLE   2660 // Trinamic TMC2660 stepper driver support.
+>>>>>>> upstream/master
 //#define TRINAMIC_R_SENSE   110 // R sense resistance in milliohms, 2130 and 2209 default is 110, 5160 is 75.
 //#define TRINAMIC_I2C         1 // Trinamic I2C - SPI bridge interface.
 //#define TRINAMIC_DEV         1 // Development mode, adds a few M-codes to aid debugging. Do not enable in production code.
@@ -106,6 +114,20 @@
                                  // Note: if left commented out the default setting is determined from COMPATIBILITY_LEVEL.
 //#define MCP3221_ENABLE    0x4D // Enable MCP3221 I2C ADC input with address 0x4D (0b01001101).
 
+// Optional control signals:
+// These will be assigned to aux input pins. Use the $pins command to check which pins are assigned.
+// NOTE: If not enough pins are available assignment will silently fail.
+//#define PROBE_ENABLE            0 // Default enabled, remove comment to disable probe input.
+//#define SAFETY_DOOR_ENABLE      1
+//#define MOTOR_FAULT_ENABLE      1
+//#define MOTOR_WARNING_ENABLE    1
+//#define PROBE_DISCONNECT_ENABLE 1
+//#define STOP_DISABLE_ENABLE     1
+//#define BLOCK_DELETE_ENABLE     1
+//#define SINGLE_BLOCK_ENABLE     1
+//#define LIMITS_OVERRIDE_ENABLE  1
+
+/**/
 // If the selected board map supports more than three motors ganging and/or auto-squaring
 // of axes can be enabled here.
 //#define X_GANGED            1

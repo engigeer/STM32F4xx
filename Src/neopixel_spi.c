@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
   neopixel_spi.c - SPI support for Neopixels
+=======
+  neopixel_spi.c - SPI support for Neopixels, non-blocking
+>>>>>>> upstream/master
 
   TODO: use I2S interface for more precise timing?
 
@@ -121,18 +125,28 @@ static settings_changed_ptr settings_changed;
 
 void onSettingsChanged (settings_t *settings, settings_changed_flags_t changed)
 {
+<<<<<<< HEAD
     if(neopixel.leds == NULL || hal.rgb.num_devices != settings->rgb_strip0_length) {
 
         if(settings->rgb_strip0_length == 0)
             settings->rgb_strip0_length = hal.rgb.num_devices;
         else
             hal.rgb.num_devices = settings->rgb_strip0_length;
+=======
+    if(neopixel.leds == NULL || hal.rgb0.num_devices != settings->rgb_strip0_length) {
+
+        if(settings->rgb_strip0_length == 0)
+            settings->rgb_strip0_length = hal.rgb0.num_devices;
+        else
+            hal.rgb0.num_devices = settings->rgb_strip0_length;
+>>>>>>> upstream/master
 
         if(neopixel.leds) {
             free(neopixel.leds);
             neopixel.leds = NULL;
         }
 
+<<<<<<< HEAD
         if(hal.rgb.num_devices) {
             neopixel.num_bytes = hal.rgb.num_devices * 9 + 24;
             if((neopixel.leds = calloc(neopixel.num_bytes, sizeof(uint8_t))) == NULL)
@@ -140,6 +154,15 @@ void onSettingsChanged (settings_t *settings, settings_changed_flags_t changed)
         }
 
         neopixel.num_leds = hal.rgb.num_devices;
+=======
+        if(hal.rgb0.num_devices) {
+            neopixel.num_bytes = hal.rgb0.num_devices * 9 + 24;
+            if((neopixel.leds = calloc(neopixel.num_bytes, sizeof(uint8_t))) == NULL)
+                hal.rgb0.num_devices = 0;
+        }
+
+        neopixel.num_leds = hal.rgb0.num_devices;
+>>>>>>> upstream/master
     }
 
     if(settings_changed)
@@ -189,7 +212,12 @@ uint8_t neopixels_set_intensity (uint8_t intensity)
                 neopixel_out(device, color);
             } while(device);
 
+<<<<<<< HEAD
             neopixels_write();
+=======
+            if(neopixel.num_leds != 1)
+                neopixels_write();
+>>>>>>> upstream/master
         }
     }
 
@@ -330,6 +358,7 @@ void neopixel_init (void)
 
         hal.periph_port.register_pin(&sdi);
 
+<<<<<<< HEAD
         hal.rgb.out = neopixel_out;
         hal.rgb.out_masked = neopixel_out_masked;
         hal.rgb.set_intensity = neopixels_set_intensity;
@@ -338,6 +367,16 @@ void neopixel_init (void)
 #endif
         hal.rgb.num_devices = NEOPIXELS_NUM;
         hal.rgb.cap = (rgb_color_t){ .R = 255, .G = 255, .B = 255 };
+=======
+        hal.rgb0.out = neopixel_out;
+        hal.rgb0.out_masked = neopixel_out_masked;
+        hal.rgb0.set_intensity = neopixels_set_intensity;
+#if NEOPIXELS_NUM > 1
+        hal.rgb0.write = neopixels_write;
+#endif
+        hal.rgb0.num_devices = NEOPIXELS_NUM;
+        hal.rgb0.cap = (rgb_color_t){ .R = 255, .G = 255, .B = 255 };
+>>>>>>> upstream/master
 
         settings_changed = hal.settings_changed;
         hal.settings_changed = onSettingsChanged;

@@ -6,19 +6,18 @@
 
   Copyright (c) 2019-2024 Terje Io
 
-  Grbl is free software: you can redistribute it and/or modify
+  grblHAL is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Grbl is distributed in the hope that it will be useful,
+  grblHAL is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
-
+  along with grblHAL. If not, see <http://www.gnu.org/licenses/>.
 */
 
 //
@@ -36,6 +35,7 @@
 #endif
 
 #include "main.h"
+#include "pwm.h"
 
 #if defined(_WIZCHIP_) && _WIZCHIP_ > 0
 #undef ETHERNET_ENABLE
@@ -126,14 +126,14 @@
 #endif
 
 #ifdef BOARD_CNC_BOOSTERPACK
-  #if N_AXIS > 3
-    #error Max number of axes is 3!
-  #endif
-  #include "cnc_boosterpack_map.h"
+  #include "boards/cnc_boosterpack_map.h"
 #elif defined(BOARD_CNC3040)
+<<<<<<< HEAD
   #if EEPROM_ENABLE
     #error EEPROM plugin not supported!
   #endif
+=======
+>>>>>>> upstream/master
   #include "boards/cnc3040_map.h"
 #elif defined(BOARD_BLACKPILL)
   #include "boards/blackpill_map.h"
@@ -167,6 +167,13 @@
   #include "boards/halcyon_v1_map.h"
 #elif defined(BOARD_MKS_ROBIN_NANO_30)
   #include "boards/mks_robin_nano_v3.0_map.h"
+<<<<<<< HEAD
+=======
+#elif defined(BOARD_LONGBOARD32)
+  #include "boards/longboard32_map.h"
+#elif defined(BOARD_MKS_EAGLE)
+  #include "boards/mks_eagle_map.h"
+>>>>>>> upstream/master
 #elif defined(BOARD_MY_MACHINE)
   #include "boards/my_machine_map.h"
 #else // default board
@@ -220,6 +227,8 @@
 #define PULSE_TIMER_IRQn            timerINT(PULSE_TIMER_N)
 #define PULSE_TIMER_IRQHandler      timerHANDLER(PULSE_TIMER_N)
 
+#if STEP_INJECT_ENABLE
+
 #if defined(STM32F407xx) || defined(STM32F429xx) || defined(STM32F446xx)
 #define PULSE2_TIMER_N              7
 #define PULSE2_TIMER                timer(PULSE2_TIMER_N)
@@ -228,6 +237,7 @@
 #define PULSE2_TIMER_IRQHandler     timerHANDLER(PULSE2_TIMER_N)
 #endif
 
+<<<<<<< HEAD
 #ifdef SPINDLE_PWM_PORT_BASE
 
 #if SPINDLE_PWM_PORT_BASE == GPIOA_BASE
@@ -554,29 +564,17 @@
 #define AUX_ANALOG 0
 #endif
 
+=======
+>>>>>>> upstream/master
 #if !defined(PULSE2_TIMER_N) && STEP_INJECT_ENABLE
-#if SPINDLE_PWM_TIMER_N == 2 || SPINDLE_PWM_TIMER_N == 9
 #define PULSE2_TIMER_N              3
-#else
-#define PULSE2_TIMER_N              2
 #endif
 #define PULSE2_TIMER                timer(PULSE2_TIMER_N)
 #define PULSE2_TIMER_CLKEN          timerCLKEN(PULSE2_TIMER_N)
 #define PULSE2_TIMER_IRQn           timerINT(PULSE2_TIMER_N)
 #define PULSE2_TIMER_IRQHandler     timerHANDLER(PULSE2_TIMER_N)
-#endif
 
-#if SPINDLE_PWM_TIMER_N == 9
-#define DEBOUNCE_TIMER_N            13
-#define DEBOUNCE_TIMER_IRQn         TIM8_UP_TIM13_IRQn       // !
-#define DEBOUNCE_TIMER_IRQHandler   TIM8_UP_TIM13_IRQHandler // !
-#else
-#define DEBOUNCE_TIMER_N            9
-#define DEBOUNCE_TIMER_IRQn         TIM1_BRK_TIM9_IRQn       // !
-#define DEBOUNCE_TIMER_IRQHandler   TIM1_BRK_TIM9_IRQHandler // !
-#endif
-#define DEBOUNCE_TIMER              timer(DEBOUNCE_TIMER_N)
-#define DEBOUNCE_TIMER_CLKEN        timerCLKEN(DEBOUNCE_TIMER_N)
+#endif // STEP_INJECT_ENABLE
 
 #if SPINDLE_ENCODER_ENABLE
 
@@ -587,9 +585,6 @@
 #define RPM_TIMER_N     2
 #endif
 
-#if SPINDLE_PWM_TIMER_N == RPM_COUNTER_N || SPINDLE_PWM_TIMER_N == RPM_TIMER_N
-#error Timer conflict: spindle sync and spindle PWM!
-#endif
 #if PULSE2_TIMER_N == RPM_COUNTER_N || PULSE2_TIMER_N == RPM_TIMER_N
 #error Timer conflict: spindle sync and step inject!
 #endif
@@ -603,19 +598,23 @@
 #define RPM_TIMER_IRQn              timerINT(RPM_TIMER_N)
 #define RPM_TIMER_IRQHandler        timerHANDLER(RPM_TIMER_N)
 
-#elif PPI_ENABLE
+#endif //  SPINDLE_ENCODER_ENABLE
 
-#if SPINDLE_PWM_TIMER_N == 2
-#error Timer conflict: laser PPI and spindle PWM!
+#if PPI_ENABLE
+
+#ifndef PPI_TIMER_N
+#define PPI_TIMER_N     2
 #endif
 
-#define PPI_TIMER_N                 2
+#if PPI_TIMER_N == RPM_COUNTER_N || PPI_TIMER_N == RPM_TIMER_N
+#error Timer conflict: PPI timer!
+#endif
 #define PPI_TIMER                   timer(PPI_TIMER_N)
 #define PPI_TIMER_CLKEN             timerCLKEN(PPI_TIMER_N)
 #define PPI_TIMER_IRQn              timerINT(PPI_TIMER_N)
 #define PPI_TIMER_IRQHandler        timerHANDLER(PPI_TIMER_N)
 
-#endif
+#endif // PPI_ENABLE
 
 // Adjust STEP_PULSE_LATENCY to get accurate step pulse length when required, e.g if using high step rates.
 // The default value is calibrated for 10 microseconds length.
@@ -738,21 +737,44 @@
 #define STEPPERS_ENABLE_PINMODE PINMODE_OUTPUT
 #endif
 
+#if defined(AUXOUTPUT0_PWM_PORT) || defined(AUXOUTPUT1_PWM_PORT) ||\
+     defined(AUXOUTPUT0_ANALOG_PORT) || defined(AUXOUTPUT1_ANALOG_PORT) ||\
+      defined(AUXINTPUT0_ANALOG_PORT) || defined(AUXINTPUT1_ANALOG_PORT) ||\
+       defined(MCP3221_ENABLE)
+#define AUX_ANALOG 1
+#else
+#define AUX_ANALOG 0
+#endif
+
 typedef struct {
     pin_function_t id;
-    GPIO_TypeDef *port;
+    pin_cap_t cap;
+    pin_mode_t mode;
     uint8_t pin;
     uint32_t bit;
+    GPIO_TypeDef *port;
     pin_group_t group;
+    uint8_t user_port;
     volatile bool active;
+<<<<<<< HEAD
     volatile bool debounce;
     pin_cap_t cap;
     pin_mode_t mode;
     ADC_HandleTypeDef *adc;
     ioport_interrupt_callback_ptr interrupt_callback;
     aux_ctrl_t *aux_ctrl;
+=======
+    ioport_interrupt_callback_ptr interrupt_callback;
+    ADC_HandleTypeDef *adc;
+>>>>>>> upstream/master
     const char *description;
 } input_signal_t;
+
+typedef struct {
+    float value;
+    ioports_pwm_t data;
+    const pwm_signal_t *port;
+} pwm_out_t;
 
 typedef struct {
     pin_function_t id;
@@ -761,6 +783,7 @@ typedef struct {
     pin_group_t group;
     pin_mode_t mode;
     const char *description;
+    pwm_out_t *pwm;
 } output_signal_t;
 
 typedef struct {
@@ -782,6 +805,6 @@ void ioports_init(pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs);
 #if AUX_ANALOG
 void ioports_init_analog (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs);
 #endif
-void ioports_event (uint32_t bit);
+void ioports_event (input_signal_t *input);
 
 #endif // __DRIVER_H__
