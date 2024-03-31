@@ -37,20 +37,13 @@ _Min_Stack_Size = 0x400 ;	/* required amount of stack */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-<<<<<<< HEAD:STM32F446RETX_BL_FLASH.ld
-  BOOT_FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 64K
-  FLASH    (rx)    : ORIGIN = 0x8010000,   LENGTH = 512K - 128K - 64K
-  EEPROM_EMUL(xrw)      : ORIGIN = 0x8060000,   LENGTH = 128K
-=======
-  BOOT_FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 32K
-  EEPROM_EMUL(xrw)      : ORIGIN = 0x80E0000,   LENGTH = 128K
-  FLASH    (rx)    : ORIGIN = 0x8008000,   LENGTH = 1024K - 32K - 128K
->>>>>>> upstream-flexi/master:STM32F407VGTX_BL32K_FLASH.ld
+  BOOT_FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 16K
+  EEPROM_EMUL(xrw)      :  ORIGIN = 0x8060000,   LENGTH = 128K
+  FLASH    (rx)    : ORIGIN = 0x8008000,   LENGTH = 512K - 16K - 128K
 }
 
-_FLASH_VectorTable = ORIGIN(FLASH);
 _EEPROM_Emul_Start = ORIGIN(EEPROM_EMUL);
-_EEPROM_Emul_Sector = 11;
+_EEPROM_Emul_Sector = 1;
 
 /* Sections */
 SECTIONS
@@ -61,7 +54,7 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
+  } >BOOT_FLASH
 
   /* The program code and other data into "FLASH" Rom type memory */
   .text :

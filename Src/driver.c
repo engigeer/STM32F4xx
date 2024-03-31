@@ -4,20 +4,20 @@
 
   Part of grblHAL
 
-  Copyright (c) 2019-2023 Terje Io
+  Copyright (c) 2019-2024 Terje Io
 
-  Grbl is free software: you can redistribute it and/or modify
+  grblHAL is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Grbl is distributed in the hope that it will be useful,
+  grblHAL is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+  along with grblHAL.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -175,6 +175,12 @@ static volatile uint32_t rpm_timer_ovf = 0;
 
 #if SPINDLE_SYNC_ENABLE
 static void stepperPulseStartSynchronized (stepper_t *stepper);
+#endif
+
+#if defined(LED_R_PIN) && defined(LED_G_PIN) && defined(LED_B_PIN)
+#define LED_RGB 1
+#else
+#define LED_RGB 0
 #endif
 
 static periph_signal_t *periph_pins = NULL;
@@ -408,6 +414,21 @@ static output_signal_t outputpin[] = {
 #ifdef SPI_RST_PORT
     { .id = Output_SPIRST,          .port = SPI_RST_PORT,           .pin = SPI_RST_PIN,             .group = PinGroup_SPI },
 #endif
+#ifdef LED_PORT
+    { .id = Output_LED,             .port = LED_PORT,               .pin = LED_PIN,                 .group = PinGroup_LED },
+#endif
+#ifdef LED_R_PORT
+    { .id = Output_LED_R,           .port = LED_R_PORT,             .pin = LED_R_PIN,               .group = PinGroup_LED },
+#endif
+#ifdef LED_G_PORT
+    { .id = Output_LED_G,           .port = LED_G_PORT,             .pin = LED_G_PIN,               .group = PinGroup_LED },
+#endif
+#ifdef LED_B_PORT
+    { .id = Output_LED_B,           .port = LED_B_PORT,             .pin = LED_B_PIN,               .group = PinGroup_LED },
+#endif
+#ifdef LED_W_PORT
+    { .id = Output_LED_W,           .port = LED_W_PORT,             .pin = LED_W_PIN,               .group = PinGroup_LED },
+#endif
 #ifdef AUXOUTPUT0_PORT
     { .id = Output_Aux0,            .port = AUXOUTPUT0_PORT,        .pin = AUXOUTPUT0_PIN,          .group = PinGroup_AuxOutput },
 #endif
@@ -432,20 +453,15 @@ static output_signal_t outputpin[] = {
 #ifdef AUXOUTPUT7_PORT
     { .id = Output_Aux7,            .port = AUXOUTPUT7_PORT,        .pin = AUXOUTPUT7_PIN,          .group = PinGroup_AuxOutput },
 #endif
-#ifdef AUXOUTPUT0_PWM_PORT
+#ifdef AUXOUTPUT0_ANALOG_PORT
+    { .id = Output_Analog_Aux0,     .port = AUXOUTPUT0_ANALOG_PORT, .pin = AUXOUTPUT0_ANALOG_PIN,   .group = PinGroup_AuxOutputAnalog },
+#elif defined(AUXOUTPUT0_PWM_PORT)
     { .id = Output_Analog_Aux0,     .port = AUXOUTPUT0_PWM_PORT,    .pin = AUXOUTPUT0_PWM_PIN,      .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
-#endif
-#ifdef AUXOUTPUT0_ANALOG_PORT
-    { .id = Output_Analog_Aux0,     .port = AUXOUTPUT0_ANALOG_PORT, .pin = AUXOUTPUT0_ANALOG_PIN,   .group = PinGroup_AuxOutputAnalog },
-#endif
-#ifdef AUXOUTPUT1_PWM_PORT
-    { .id = Output_Analog_Aux1,     .port = AUXOUTPUT1_PWM_PORT,    .pin = AUXOUTPUT1_PWM_PIN,      .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
-#endif
-#ifdef AUXOUTPUT0_ANALOG_PORT
-    { .id = Output_Analog_Aux0,     .port = AUXOUTPUT0_ANALOG_PORT, .pin = AUXOUTPUT0_ANALOG_PIN,   .group = PinGroup_AuxOutputAnalog },
 #endif
 #ifdef AUXOUTPUT1_ANALOG_PORT
     { .id = Output_Analog_Aux1,     .port = AUXOUTPUT1_ANALOG_PORT, .pin = AUXOUTPUT1_ANALOG_PIN,   .group = PinGroup_AuxOutputAnalog }
+#elif defined(AUXOUTPUT1_PWM_PORT)
+    { .id = Output_Analog_Aux1,     .port = AUXOUTPUT1_PWM_PORT,    .pin = AUXOUTPUT1_PWM_PIN,      .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
 #endif
 };
 
@@ -1080,7 +1096,7 @@ static void limitsEnable (bool on, axes_signals_t homing_cycle)
             pin = xbar_fn_to_axismask(limit->id);
             disable = limit->group == PinGroup_Limit ? (pin.mask & homing_source.min.mask) : (pin.mask & homing_source.max.mask);
         }
-        gpio_irq_enable(limit, disable ? IRQ_Mode_None : limit->irq_mode);
+        gpio_irq_enable(limit, disable ? IRQ_Mode_None : limit->mode.irq_mode);
     } while(idx);
 
 #ifdef Z_LIMIT_POLL
@@ -1218,6 +1234,9 @@ static control_signals_t systemGetState (void)
     signals.motor_warning = DIGITAL_IN(MOTOR_WARNING_PORT, MOTOR_WARNING_PIN);
   #endif
 
+    if(settings.control_invert.mask)
+        signals.value ^= settings.control_invert.mask;
+
   #if AUX_CONTROLS_SCAN
     uint_fast8_t i;
     for(i = AUX_CONTROLS_SCAN; i < AuxCtrl_NumEntries; i++) {
@@ -1229,10 +1248,12 @@ static control_signals_t systemGetState (void)
     }
   #endif
 
-#endif // AUX_CONTROLS_ENABLED
-
+#else
     if(settings.control_invert.mask)
         signals.value ^= settings.control_invert.mask;
+
+#endif // AUX_CONTROLS_ENABLED
+
 
     return signals;
 }
@@ -1242,38 +1263,72 @@ static control_signals_t systemGetState (void)
 static void aux_irq_handler (uint8_t port, bool state)
 {
     uint_fast8_t i;
-    control_signals_t signals = systemGetState();
+    control_signals_t signals = {0};
 
     for(i = 0; i < AuxCtrl_NumEntries; i++) {
         if(aux_ctrl[i].port == port) {
             if(!aux_ctrl[i].debouncing) {
+                if(i == AuxCtrl_SafetyDoor) {
+                    if((debounce.door = aux_ctrl[i].debouncing = debounce_start()))
+                        break;
+                }
                 signals.mask |= aux_ctrl[i].cap.mask;
-                if(i == AuxCtrl_SafetyDoor)
-                    debounce.door = aux_ctrl[i].debouncing = debounce_start();
+                if(aux_ctrl[i].irq_mode == IRQ_Mode_Change)
+                    signals.deasserted = hal.port.wait_on_input(Port_Digital, aux_ctrl[i].port, WaitMode_Immediate, 0.0f) == 0;
             }
+            break;
         }
     }
 
-    if(signals.mask)
+    if(signals.mask) {
+        if(!signals.deasserted)
+            signals.mask |= systemGetState().mask;
         hal.control.interrupt_callback(signals);
+    }
 }
 
-bool aux_claim (xbar_t *properties, uint8_t port, void *data)
+static bool aux_attach (xbar_t *properties, aux_ctrl_t *aux_ctrl)
 {
+    bool ok;
+    uint_fast8_t i = sizeof(inputpin) / sizeof(input_signal_t);
+
+    do {
+        i--;
+        if((ok = (void *)inputpin[i].port == properties->port && inputpin[i].pin == properties->pin)) {
+            inputpin[i].aux_ctrl = aux_ctrl;
+            break;
+        }
+    } while(i);
+
+    return ok;
+}
+
+static bool aux_claim (xbar_t *properties, uint8_t port, void *data)
+{
+    bool ok;
+
     ((aux_ctrl_t *)data)->port = port;
 
-    return ioport_claim(Port_Digital, Port_Input, &((aux_ctrl_t *)data)->port, xbar_fn_to_pinname(((aux_ctrl_t *)data)->function));
+    if((ok = ioport_claim(Port_Digital, Port_Input, &((aux_ctrl_t *)data)->port, xbar_fn_to_pinname(((aux_ctrl_t *)data)->function))))
+        aux_attach(properties, (aux_ctrl_t *)data);
+
+    return ok;
 }
 
-static bool aux_claim_explicit (aux_ctrl_t *aux)
+#if AUX_CONTROLS_XMAP
+
+static bool aux_claim_explicit (aux_ctrl_t *aux_ctrl)
 {
-    if((aux->enabled = aux->port != 0xFF && ioport_claim(Port_Digital, Port_Input, &aux->port, xbar_fn_to_pinname(aux->function))))
-        hal.signals_cap.mask |= aux->cap.mask;
-    else
-        aux->port = 0xFF;
+    if((aux_ctrl->enabled = aux_ctrl->port != 0xFF && ioport_claim(Port_Digital, Port_Input, &aux_ctrl->port, xbar_fn_to_pinname(aux_ctrl->function)))) {
+        hal.signals_cap.mask |= aux_ctrl->cap.mask;
+        aux_attach(hal.port.get_pin_info(Port_Digital, Port_Input, aux_ctrl->port), aux_ctrl);
+    } else
+        aux_ctrl->port = 0xFF;
 
-    return aux->enabled;
+    return aux_ctrl->enabled;
 }
+
+#endif
 
 #endif // AUX_CONTROLS_ENABLED
 
@@ -1654,6 +1709,35 @@ static coolant_state_t coolantGetState (void)
     return state;
 }
 
+#if LED_RGB
+
+static void rgb_out (uint16_t device, rgb_color_t color)
+{
+    DIGITAL_OUT(LED_R_PORT, LED_R_PIN, !!color.R);
+    DIGITAL_OUT(LED_G_PORT, LED_G_PIN, !!color.G);
+    DIGITAL_OUT(LED_B_PORT, LED_B_PIN, !!color.B);
+#ifdef LED_W_PIN
+    DIGITAL_OUT(LED_W_PORT, LED_W_PIN, !!color.W);
+#endif
+}
+
+static void rgb_out_masked (uint16_t device, rgb_color_t color, rgb_color_mask_t mask)
+{
+    if(mask.R)
+        DIGITAL_OUT(LED_R_PORT, LED_R_PIN, !!color.R);
+    if(mask.G)
+        DIGITAL_OUT(LED_G_PORT, LED_G_PIN, !!color.G);
+    if(mask.B)
+        DIGITAL_OUT(LED_B_PORT, LED_B_PIN, !!color.B);
+#ifdef LED_W_PIN
+    if(mask.W)
+        DIGITAL_OUT(LED_W_PORT, LED_W_PIN, !!color.W);
+#endif
+}
+
+
+#endif
+
 // Helper functions for setting/clearing/inverting individual bits atomically (uninterruptable)
 static void bitsSetAtomic (volatile uint_fast16_t *ptr, uint_fast16_t bits)
 {
@@ -1684,12 +1768,12 @@ static uint_fast16_t valueSetAtomic (volatile uint_fast16_t *ptr, uint_fast16_t 
 
 #if MPG_MODE == 1
 
-static void mpg_select (sys_state_t state)
+static void mpg_select (void *data)
 {
     stream_mpg_enable(DIGITAL_IN(MPG_MODE_PORT, MPG_MODE_PIN) == 0);
 }
 
-static void mpg_enable (sys_state_t state)
+static void mpg_enable (void *data)
 {
     if(sys.mpg_mode != (DIGITAL_IN(MPG_MODE_PORT, MPG_MODE_PIN) == 0))
         stream_mpg_enable(true);
@@ -1860,7 +1944,7 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
                 continue;
 
             if(input->group != PinGroup_AuxInput) {
-                input->irq_mode = IRQ_Mode_None;
+                input->mode.irq_mode = IRQ_Mode_None;
                 input->bit = 1 << input->pin;
             }
 
@@ -1868,34 +1952,34 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
 
                 case Input_Reset:
                     pullup = !settings->control_disable_pullup.reset;
-                    input->irq_mode = control_fei.reset ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = control_fei.reset ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_EStop:
                     pullup = !settings->control_disable_pullup.e_stop;
-                    input->irq_mode = control_fei.e_stop ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = control_fei.e_stop ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_FeedHold:
                     pullup = !settings->control_disable_pullup.feed_hold;
-                    input->irq_mode = control_fei.feed_hold ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = control_fei.feed_hold ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_CycleStart:
                     pullup = !settings->control_disable_pullup.cycle_start;
-                    input->irq_mode = control_fei.cycle_start ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = control_fei.cycle_start ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_SafetyDoor:
                     pullup = !settings->control_disable_pullup.safety_door_ajar;
-                    input->irq_mode = control_fei.safety_door_ajar ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = control_fei.safety_door_ajar ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
 #ifdef PROBE_PIN
                 case Input_Probe:
                    pullup = hal.driver_cap.probe_pull_up;
   #if PROBE_IRQ_BIT
-                   input->irq_mode = hal.probe.get_state().triggered ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                   input->mode.irq_mode = hal.probe.get_state().triggered ? IRQ_Mode_Falling : IRQ_Mode_Rising;
   #endif
                    break;
 #endif
@@ -1904,75 +1988,75 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
                 case Input_LimitX_2:
                 case Input_LimitX_Max:
                     pullup = !settings->limits.disable_pullup.x;
-                    input->irq_mode = limit_fei.x ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = limit_fei.x ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_LimitY:
                 case Input_LimitY_2:
                 case Input_LimitY_Max:
                     pullup = !settings->limits.disable_pullup.y;
-                    input->irq_mode = limit_fei.y ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = limit_fei.y ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_LimitZ:
                 case Input_LimitZ_2:
                 case Input_LimitZ_Max:
                     pullup = !settings->limits.disable_pullup.z;
-                    input->irq_mode = limit_fei.z ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = limit_fei.z ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_LimitA:
                 case Input_LimitA_Max:
                     pullup = !settings->limits.disable_pullup.a;
-                    input->irq_mode = limit_fei.a ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = limit_fei.a ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_LimitB:
                 case Input_LimitB_Max:
                     pullup = !settings->limits.disable_pullup.b;
-                    input->irq_mode = limit_fei.b ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = limit_fei.b ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_LimitC:
                 case Input_LimitC_Max:
                     pullup = !settings->limits.disable_pullup.c;
-                    input->irq_mode = limit_fei.c ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                    input->mode.irq_mode = limit_fei.c ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                     break;
 
                 case Input_MPGSelect:
                     pullup = true;
-                    input->irq_mode = IRQ_Mode_Change;
+                    input->mode.irq_mode = IRQ_Mode_Change;
                     break;
 
                 case Input_I2CStrobe:
                     pullup = true;
-                    input->irq_mode = IRQ_Mode_Change;
+                    input->mode.irq_mode = IRQ_Mode_Change;
                     break;
 
                 case Input_SPIIRQ:
                     pullup = true;
-                    input->irq_mode = IRQ_Mode_Falling;
+                    input->mode.irq_mode = IRQ_Mode_Falling;
                     break;
 
                 case Input_SpindleIndex:
                     pullup = true;
-                    input->irq_mode = IRQ_Mode_Falling;
+                    input->mode.irq_mode = IRQ_Mode_Falling;
                     break;
 #if QEI_ENABLE
                 case Input_QEI_A:
                     if(qei_enable)
-                        input->irq_mode = IRQ_Mode_Change;
+                        input->mode.irq_mode = IRQ_Mode_Change;
                     break;
 
                 case Input_QEI_B:
                     if(qei_enable)
-                        input->irq_mode = IRQ_Mode_Change;
+                        input->mode.irq_mode = IRQ_Mode_Change;
                     break;
 
   #if QEI_INDEX_ENABLED
                 case Input_QEI_Index:
                     if(qei_enable)
-                        input->irq_mode = IRQ_Mode_None;
+                        input->mode.irq_mode = IRQ_Mode_None;
                     break;
   #endif
 
@@ -1980,7 +2064,7 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
                 case Input_QEI_Select:
                     input->debounce = true;
                     if(qei_enable)
-                        input->irq_mode = IRQ_Mode_Falling;
+                        input->mode.irq_mode = IRQ_Mode_Falling;
                     break;
   #endif
 #endif
@@ -2002,7 +2086,7 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
             GPIO_Init.Pin = 1 << input->pin;
             GPIO_Init.Pull = pullup ? GPIO_PULLUP : GPIO_NOPULL;
 
-            switch(input->irq_mode) {
+            switch(input->mode.irq_mode) {
                 case IRQ_Mode_Rising:
                     GPIO_Init.Mode = GPIO_MODE_IT_RISING;
                     break;
@@ -2060,7 +2144,8 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
 #if AUX_CONTROLS_ENABLED
         for(i = 0; i < AuxCtrl_NumEntries; i++) {
             if(aux_ctrl[i].enabled && aux_ctrl[i].irq_mode != IRQ_Mode_None) {
-                aux_ctrl[i].irq_mode = (settings->control_invert.mask & aux_ctrl[i].cap.mask) ? IRQ_Mode_Falling : IRQ_Mode_Rising;
+                if(aux_ctrl[i].irq_mode & (IRQ_Mode_Falling|IRQ_Mode_Rising))
+                    aux_ctrl[i].irq_mode = (settings->control_invert.mask & aux_ctrl[i].cap.mask) ? IRQ_Mode_Falling : IRQ_Mode_Rising;
                 hal.port.register_interrupt_handler(aux_ctrl[i].port, aux_ctrl[i].irq_mode, aux_irq_handler);
             }
         }
@@ -2671,7 +2756,7 @@ bool driver_init (void)
 #else
     hal.info = "STM32F401CC";
 #endif
-    hal.driver_version = "231228";
+    hal.driver_version = "240205";
     hal.driver_url = GRBL_URL "/STM32F4xx";
 #ifdef BOARD_NAME
     hal.board = BOARD_NAME;
@@ -2761,6 +2846,17 @@ bool driver_init (void)
     hal.nvs.type = NVS_None;
 #endif
 
+#if LED_RGB
+    hal.rgb.out = rgb_out;
+    hal.rgb.out_masked = rgb_out_masked;
+    hal.rgb.num_devices = 1;
+  #ifdef LED_W_PIN
+    hal.rgb.cap = (rgb_color_t){ .R = 1, .G = 1, .B = 1, .W = 1 };
+  #else
+    hal.rgb.cap = (rgb_color_t){ .R = 1, .G = 1, .B = 1 };
+  #endif
+#endif
+
 #if QEI_ENABLE
     hal.encoder.reset = qei_reset;
     hal.encoder.on_event = encoder_event;
@@ -2844,12 +2940,13 @@ bool driver_init (void)
 
     for(i = 0 ; i < sizeof(inputpin) / sizeof(input_signal_t); i++) {
         input = &inputpin[i];
+        input->mode.input = input->cap.input = On;
         if(input->group == PinGroup_AuxInput) {
             if(aux_digital_in.pins.inputs == NULL)
                 aux_digital_in.pins.inputs = input;
             input->id = (pin_function_t)(Input_Aux0 + aux_digital_in.n_pins++);
             input->bit = 1 << input->pin;
-            input->cap.pull_mode = PullMode_UpDown;
+            input->mode.pull_mode = input->cap.pull_mode = PullMode_Up;
             input->cap.irq_mode = ((DRIVER_IRQMASK|PROBE_IRQ_BIT) & input->bit) ? IRQ_Mode_None : IRQ_Mode_Edges;
 #if SAFETY_DOOR_ENABLE
             if(input->port == SAFETY_DOOR_PORT && input->pin == SAFETY_DOOR_PIN && input->cap.irq_mode != IRQ_Mode_None)
@@ -2861,13 +2958,14 @@ bool driver_init (void)
 #endif
 #if MOTOR_WARNING_ENABLE
             if(input->port == MOTOR_WARNING_PORT && input->pin == MOTOR_WARNING_PIN && input->cap.irq_mode != IRQ_Mode_None)
-                aux_control_port[AuxCtrl_MotorWarning] = aux_digital_in.n_pins - 1;
+                aux_ctrl[AuxCtrl_MotorWarning].port = aux_digital_in.n_pins - 1;
 #endif
         } else if(input->group == PinGroup_AuxInputAnalog) {
             if(aux_analog_in.pins.inputs == NULL)
                 aux_analog_in.pins.inputs = input;
             input->id = (pin_function_t)(Input_Analog_Aux0 + aux_analog_in.n_pins++);
             input->bit = 1 << input->pin;
+            input->mode.analog = input->cap.analog = On;
         }  else if(input->group & (PinGroup_Limit|PinGroup_LimitMax)) {
             if(limit_inputs.pins.inputs == NULL)
                 limit_inputs.pins.inputs = input;
@@ -2882,6 +2980,7 @@ bool driver_init (void)
     output_signal_t *output;
     for(i = 0 ; i < sizeof(outputpin) / sizeof(output_signal_t); i++) {
         output = &outputpin[i];
+        output->mode.output = On;
         if(output->group == PinGroup_AuxOutput) {
             if(aux_digital_out.pins.outputs == NULL)
                 aux_digital_out.pins.outputs = output;
@@ -2889,6 +2988,7 @@ bool driver_init (void)
         } else if(output->group == PinGroup_AuxOutputAnalog) {
             if(aux_analog_out.pins.outputs == NULL)
                 aux_analog_out.pins.outputs = output;
+            output->mode.analog = On;
             output->id = (pin_function_t)(Output_Analog_Aux0 + aux_analog_out.n_pins++);
         }
     }
@@ -2924,7 +3024,7 @@ bool driver_init (void)
 #if AUX_CONTROLS_ENABLED
     for(i = AuxCtrl_ProbeDisconnect; i < AuxCtrl_NumEntries; i++) {
         if(aux_ctrl[i].enabled) {
-            if((aux_ctrl[i].enabled = ioports_enumerate(Port_Digital, Port_Input, (pin_mode_t){ .irq_mode = aux_ctrl[i].irq_mode }, true, aux_claim, (void *)&aux_ctrl[i])))
+            if((aux_ctrl[i].enabled = ioports_enumerate(Port_Digital, Port_Input, (pin_cap_t){ .irq_mode = aux_ctrl[i].irq_mode, .claimable = On }, aux_claim, (void *)&aux_ctrl[i])))
                 hal.signals_cap.mask |= aux_ctrl[i].cap.mask;
         }
     }
@@ -2936,16 +3036,18 @@ bool driver_init (void)
 
 #if MPG_MODE == 1
   #if KEYPAD_ENABLE == 2
-    if((hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL), false, keypad_enqueue_keycode)))
-        protocol_enqueue_rt_command(mpg_enable);
+    if((hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL, NULL), false, keypad_enqueue_keycode)))
+        protocol_enqueue_foreground_task(mpg_enable, NULL);
   #else
-    if((hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL), false, NULL)))
-        protocol_enqueue_rt_command(mpg_enable);
+    if((hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL, NULL), false, NULL)))
+        protocol_enqueue_foreground_task(mpg_enable, NULL);
   #endif
 #elif MPG_MODE == 2
-    hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL), false, keypad_enqueue_keycode);
+    hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL, NULL), false, keypad_enqueue_keycode);
+#elif MPG_MODE == 3
+    hal.driver_cap.mpg_mode = stream_mpg_register(stream_open_instance(MPG_STREAM, 115200, NULL, NULL), false, stream_mpg_check_enable);
 #elif KEYPAD_ENABLE == 2
-    stream_open_instance(KEYPAD_STREAM, 115200, keypad_enqueue_keycode);
+    stream_open_instance(KEYPAD_STREAM, 115200, keypad_enqueue_keycode, "Keypad");
 #endif
 
 #if ETHERNET_ENABLE
@@ -3042,11 +3144,10 @@ void DEBOUNCE_TIMER_IRQHandler (void)
         debounce.door = Off;
 #if AUX_CONTROLS_ENABLED
         aux_ctrl[AuxCtrl_SafetyDoor].debouncing = false;
-#else
+#endif
         control_signals_t state = systemGetState();
         if(state.safety_door_ajar)
             hal.control.interrupt_callback(state);
-#endif
     }
 
 #if QEI_SELECT_ENABLED
@@ -3125,7 +3226,7 @@ void EXTI0_IRQHandler(void)
 #elif PROBE_IRQ_BIT & (1<<0)
         probe.triggered = On;
 #elif MPG_MODE_BIT && (1<<0)
-        protocol_enqueue_rt_command(mpg_select);
+        protocol_enqueue_foreground_task(mpg_select, NULL);
 #elif I2C_STROBE_BIT & (1<<0)
         if(i2c_strobe.callback)
             i2c_strobe.callback(0, DIGITAL_IN(I2C_STROBE_PORT, I2C_STROBE_PIN) == 0);
@@ -3171,7 +3272,7 @@ void EXTI1_IRQHandler(void)
 #elif PROBE_IRQ_BIT & (1<<1)
         probe.triggered = On;
 #elif MPG_MODE_BIT && (1<<1)
-        protocol_enqueue_rt_command(mpg_select);
+        protocol_enqueue_foreground_task(mpg_select, NULL);
 #elif I2C_STROBE_BIT & (1<<1)
         if(i2c_strobe.callback)
             i2c_strobe.callback(0, DIGITAL_IN(I2C_STROBE_PORT, I2C_STROBE_PIN) == 0);
@@ -3217,7 +3318,7 @@ void EXTI2_IRQHandler(void)
 #elif PROBE_IRQ_BIT & (1<<2)
         probe.triggered = On;
 #elif MPG_MODE_BIT && (1<<2)
-        protocol_enqueue_rt_command(mpg_select);
+        protocol_enqueue_foreground_task(mpg_select, NULL);
 #elif I2C_STROBE_BIT & (1<<2)
         if(i2c_strobe.callback)
             i2c_strobe.callback(0, DIGITAL_IN(I2C_STROBE_PORT, I2C_STROBE_PIN) == 0);
@@ -3263,7 +3364,7 @@ void EXTI3_IRQHandler(void)
 #elif PROBE_IRQ_BIT & (1<<3)
         probe.triggered = On;
 #elif MPG_MODE_BIT && (1<<3)
-        protocol_enqueue_rt_command(mpg_select);
+        protocol_enqueue_foreground_task(mpg_select, NULL);
 #elif I2C_STROBE_BIT & (1<<3)
         if(i2c_strobe.callback)
             i2c_strobe.callback(0, DIGITAL_IN(I2C_STROBE_PORT, I2C_STROBE_PIN) == 0);
@@ -3309,7 +3410,7 @@ void EXTI4_IRQHandler(void)
 #elif PROBE_IRQ_BIT & (1<<4)
         probe.triggered = On;
 #elif MPG_MODE_BIT && (1<<4)
-        protocol_enqueue_rt_command(mpg_select);
+        protocol_enqueue_foreground_task(mpg_select, NULL);
 #elif I2C_STROBE_BIT & (1<<4)
         if(i2c_strobe.callback)
             i2c_strobe.callback(0, DIGITAL_IN(I2C_STROBE_PORT, I2C_STROBE_PIN) == 0);
@@ -3391,7 +3492,7 @@ void EXTI9_5_IRQHandler(void)
 #endif
 #if MPG_MODE_BIT & 0x03E0
         if(ifg & MPG_MODE_BIT)
-            protocol_enqueue_rt_command(mpg_select);
+            protocol_enqueue_foreground_task(mpg_select, NULL);
 #endif
 #if AUXINPUT_MASK & 0x03E0
         if(ifg & aux_irq)
@@ -3455,7 +3556,7 @@ void EXTI15_10_IRQHandler(void)
 #endif
 #if MPG_MODE_BIT & 0xFC00
         if(ifg & MPG_MODE_BIT)
-            protocol_enqueue_rt_command(mpg_select);
+            protocol_enqueue_foreground_task(mpg_select, NULL);
 #endif
 #if AUXINPUT_MASK & 0xFC00
         if(ifg & aux_irq)
