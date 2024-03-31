@@ -525,7 +525,7 @@ static probe_state_t probe = {
 
 #if I2C_STROBE_BIT || defined(I2C_STROBE_AUX_ENABLE) || SPI_IRQ_BIT
 
-#if I2C_STROBE_BIT || defined(I2C_STROBE_AUX_ENABLE)
+#if I2C_STROBE_BIT || defined(I2C_STROBE_AUX_ENABLE) || defined(I2C_STROBE_PIN)
 static driver_irq_handler_t i2c_strobe = { .type = IRQ_I2C_Strobe };
 #endif
 
