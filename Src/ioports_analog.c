@@ -23,21 +23,13 @@
 
 #if AUX_ANALOG
 
-<<<<<<< HEAD
-#ifdef AUXOUTPUT0_PWM_PORT_BASE
-=======
 #ifdef AUXOUTPUT0_PWM_PORT
->>>>>>> upstream/master
 #define PWM_OUT0 1
 #else
 #define PWM_OUT0 0
 #endif
 
-<<<<<<< HEAD
-#ifdef AUXOUTPUT1_PWM_PORT_BASE
-=======
 #ifdef AUXOUTPUT1_PWM_PORT
->>>>>>> upstream/master
 #define PWM_OUT1 1
 #else
 #define PWM_OUT1 0
@@ -45,11 +37,8 @@
 
 #define AUX_ANALOG_OUT (PWM_OUT0 + PWM_OUT1)
 
-<<<<<<< HEAD
-=======
 #include "pwm.h"
 
->>>>>>> upstream/master
 #include "grbl/ioports.h"
 
 typedef struct {
@@ -126,21 +115,6 @@ static float mcp3221_in_state (xbar_t *input)
 
 #if AUX_ANALOG_OUT
 
-<<<<<<< HEAD
-typedef struct {
-    ioports_pwm_t data;
-    float value;
-    void (*set_value)(uint_fast8_t ch, float value);
-} pwm_out_t;
-
-static pwm_out_t pwm_out[AUX_ANALOG_OUT] = {0};
-
-static float pwm_get_value (struct xbar *output)
-{
-    int_fast8_t ch = output->function - Output_Analog_Aux0;
-
-    return ch >= 0 && ch < analog.out.n_ports ? pwm_out[ch].value : -1.0f;
-=======
 static float pwm_get_value (xbar_t *output)
 {
     return output->id < analog.out.n_ports ? aux_out_analog[output->id].pwm->value : -1.0f;
@@ -172,253 +146,16 @@ static void pwm_out (uint8_t port, float value)
                 pwm->timer->BDTR |= TIM_BDTR_MOE;
         }
     }
->>>>>>> upstream/master
 }
 
 static bool analog_out (uint8_t port, float value)
 {
-<<<<<<< HEAD
-    if(port < analog.out.n_ports) {
-
-        port = ioports_map(analog.out, port);
-
-        uint_fast8_t ch = aux_out_analog[port].id - Output_Analog_Aux0;
-
-        pwm_out[ch].set_value(ch, value);
-    }
-=======
     if(port < analog.out.n_ports)
         pwm_out(ioports_map(analog.out, port), value);
->>>>>>> upstream/master
 
     return port < analog.out.n_ports;
 }
 
-<<<<<<< HEAD
-#endif
-
-#ifdef AUXOUTPUT0_PWM_PORT_BASE
-
-static void pwm0_out (uint_fast8_t ch, float value)
-{
-    uint_fast16_t pwm_value = ioports_compute_pwm_value(&pwm_out[ch].data, value);
-
-    pwm_out[ch].value = value;
-
-    if(pwm_value == pwm_out[ch].data.off_value) {
-        if(pwm_out[ch].data.always_on) {
-            AUXOUTPUT0_PWM_TIMER_CCR = pwm_out[ch].data.off_value;
-#if AUXOUTPUT0_PWM_TIMER_N == 1
-            AUXOUTPUT0_PWM_TIMER->BDTR |= TIM_BDTR_MOE;
-#endif
-            AUXOUTPUT0_PWM_TIMER_CCR = pwm_value;
-        } else
-#if AUXOUTPUT0_PWM_TIMER_N == 1
-            AUXOUTPUT0_PWM_TIMER->BDTR &= ~TIM_BDTR_MOE; // Set PWM output low
-#else
-            AUXOUTPUT0_PWM_TIMER_CCR = 0;
-#endif
-    } else {
-        AUXOUTPUT0_PWM_TIMER_CCR = pwm_value;
-#if AUXOUTPUT0_PWM_TIMER_N == 1
-        AUXOUTPUT0_PWM_TIMER->BDTR |= TIM_BDTR_MOE;
-#endif
-    }
-}
-
-static bool init_pwm0 (xbar_t *pin, pwm_config_t *config)
-{
-    static bool init_ok = false;
-
-    bool ok;
-    RCC_ClkInitTypeDef clock;
-    uint32_t latency, prescaler = 0;
-    uint_fast8_t ch = pin->function - Output_Analog_Aux0;
-    ioports_pwm_t *pwm_data = &pwm_out[ch].data;
-
-    if(!init_ok) {
-
-        init_ok = true;
-
-        AUXOUTPUT0_PWM_CLKEN();
-
-        GPIO_InitTypeDef GPIO_Init = {
-            .Speed = GPIO_SPEED_FREQ_HIGH,
-            .Mode = GPIO_MODE_OUTPUT_PP,
-            .Pin = (1 << AUXOUTPUT0_PWM_PIN),
-            .Mode = GPIO_MODE_AF_PP,
-            .Pull = GPIO_NOPULL,
-            .Alternate = AUXOUTPUT0_PWM_AF
-        };
-        HAL_GPIO_Init(AUXOUTPUT0_PWM_PORT, &GPIO_Init);
-
-        pwm_out[ch].set_value = pwm0_out;
-    }
-
-    HAL_RCC_GetClockConfig(&clock, &latency);
-
-    do {
-        prescaler++;
-#if AUXOUTPUT0_PWM_TIMER_N == 1
-        ok = ioports_precompute_pwm_values(config, pwm_data, (HAL_RCC_GetPCLK2Freq() * TIMER_CLOCK_MUL(clock.APB2CLKDivider)) / prescaler);
-#else
-        ok = ioports_precompute_pwm_values(config, pwm_data, (HAL_RCC_GetPCLK1Freq() * TIMER_CLOCK_MUL(clock.APB1CLKDivider)) / prescaler);
-#endif
-    } while(ok && pwm_data->period > 65530);
-
-    if(ok) {
-
-        AUXOUTPUT0_PWM_TIMER->CR1 &= ~TIM_CR1_CEN;
-
-        TIM_Base_InitTypeDef timerInitStructure = {
-            .Prescaler = prescaler - 1,
-            .CounterMode = TIM_COUNTERMODE_UP,
-            .Period = pwm_data->period - 1,
-            .ClockDivision = TIM_CLOCKDIVISION_DIV1,
-            .RepetitionCounter = 0
-        };
-
-        TIM_Base_SetConfig(AUXOUTPUT0_PWM_TIMER, &timerInitStructure);
-
-        AUXOUTPUT0_PWM_TIMER->CCER &= ~AUXOUTPUT0_PWM_CCER_EN;
-        AUXOUTPUT0_PWM_TIMER_CCMR &= ~AUXOUTPUT0_PWM_CCMR_OCM_CLR;
-        AUXOUTPUT0_PWM_TIMER_CCMR |= AUXOUTPUT0_PWM_CCMR_OCM_SET;
-        AUXOUTPUT0_PWM_TIMER_CCR = 0;
-#if AUXOUTPUT0_PWM_TIMER_N == 1
-        AUXOUTPUT0_PWM_TIMER->BDTR |= TIM_BDTR_OSSR|TIM_BDTR_OSSI;
-#endif
-        if(config->invert) {
-            AUXOUTPUT0_PWM_TIMER->CCER |= AUXOUTPUT0_PWM_CCER_POL;
-            AUXOUTPUT0_PWM_TIMER->CR2 |= AUXOUTPUT0_PWM_CR2_OIS;
-        } else {
-            AUXOUTPUT0_PWM_TIMER->CCER &= ~AUXOUTPUT0_PWM_CCER_POL;
-            AUXOUTPUT0_PWM_TIMER->CR2 &= ~AUXOUTPUT0_PWM_CR2_OIS;
-        }
-        AUXOUTPUT0_PWM_TIMER->CCER |= AUXOUTPUT0_PWM_CCER_EN;
-        AUXOUTPUT0_PWM_TIMER->CR1 |= TIM_CR1_CEN;
-
-        aux_out_analog[ch].mode.pwm = !config->servo_mode;
-        aux_out_analog[ch].mode.servo_pwm = config->servo_mode;
-
-        pwm0_out(ch, config->min);
-    }
-
-    return ok;
-}
-
-#endif // AUXOUTPUT0_PWM_PORT_BASE
-
-#ifdef AUXOUTPUT1_PWM_PORT_BASE
-
-static void pwm1_out (uint_fast8_t ch, float value)
-{
-    uint_fast16_t pwm_value = ioports_compute_pwm_value(&pwm_out[ch].data, value);
-
-    pwm_out[ch].value = value;
-
-    if(pwm_value == pwm_out[ch].data.off_value) {
-        if(pwm_out[ch].data.always_on) {
-            AUXOUTPUT1_PWM_TIMER_CCR = pwm_out[ch].data.off_value;
-#if AUXOUTPUT1_PWM_TIMER_N == 1
-            AUXOUTPUT1_PWM_TIMER->BDTR |= TIM_BDTR_MOE;
-#endif
-            AUXOUTPUT1_PWM_TIMER_CCR = pwm_value;
-        } else
-#if AUXOUTPUT1_PWM_TIMER_N == 1
-            AUXOUTPUT1_PWM_TIMER->BDTR &= ~TIM_BDTR_MOE; // Set PWM output low
-#else
-            AUXOUTPUT1_PWM_TIMER_CCR = 0;
-#endif
-    } else {
-        AUXOUTPUT1_PWM_TIMER_CCR = pwm_value;
-#if AUXOUTPUT1_PWM_TIMER_N == 1
-        AUXOUTPUT1_PWM_TIMER->BDTR |= TIM_BDTR_MOE;
-#endif
-    }
-}
-
-static bool init_pwm1 (xbar_t *pin, pwm_config_t *config)
-{
-    static bool init_ok = false;
-
-    bool ok;
-    RCC_ClkInitTypeDef clock;
-    uint32_t latency, prescaler = 0;
-    uint_fast8_t ch = pin->function - Output_Analog_Aux0;
-    ioports_pwm_t *pwm_data = &pwm_out[ch].data;
-
-    if(!init_ok) {
-
-        init_ok = true;
-
-        AUXOUTPUT1_PWM_CLKEN();
-
-        GPIO_InitTypeDef GPIO_Init = {
-            .Speed = GPIO_SPEED_FREQ_HIGH,
-            .Mode = GPIO_MODE_OUTPUT_PP,
-            .Pin = (1 << AUXOUTPUT1_PWM_PIN),
-            .Mode = GPIO_MODE_AF_PP,
-            .Pull = GPIO_NOPULL,
-            .Alternate = AUXOUTPUT1_PWM_AF
-        };
-        HAL_GPIO_Init(AUXOUTPUT1_PWM_PORT, &GPIO_Init);
-
-        pwm_out[ch].set_value = pwm1_out;
-    }
-
-    HAL_RCC_GetClockConfig(&clock, &latency);
-
-    do {
-        prescaler++;
-#if AUXOUTPUT1_PWM_TIMER_N == 1
-        ok = ioports_precompute_pwm_values(config, pwm_data, (HAL_RCC_GetPCLK2Freq() * TIMER_CLOCK_MUL(clock.APB2CLKDivider)) / prescaler);
-#else
-        ok = ioports_precompute_pwm_values(config, pwm_data, (HAL_RCC_GetPCLK1Freq() * TIMER_CLOCK_MUL(clock.APB1CLKDivider)) / prescaler);
-#endif
-    } while(ok && pwm_data->period > 65530);
-
-    if(ok) {
-
-        AUXOUTPUT1_PWM_TIMER->CR1 &= ~TIM_CR1_CEN;
-
-        TIM_Base_InitTypeDef timerInitStructure = {
-            .Prescaler = prescaler - 1,
-            .CounterMode = TIM_COUNTERMODE_UP,
-            .Period = pwm_data->period - 1,
-            .ClockDivision = TIM_CLOCKDIVISION_DIV1,
-            .RepetitionCounter = 0
-        };
-
-        TIM_Base_SetConfig(AUXOUTPUT1_PWM_TIMER, &timerInitStructure);
-
-        AUXOUTPUT1_PWM_TIMER->CCER &= ~AUXOUTPUT1_PWM_CCER_EN;
-        AUXOUTPUT1_PWM_TIMER_CCMR &= ~AUXOUTPUT1_PWM_CCMR_OCM_CLR;
-        AUXOUTPUT1_PWM_TIMER_CCMR |= AUXOUTPUT1_PWM_CCMR_OCM_SET;
-        AUXOUTPUT1_PWM_TIMER_CCR = 0;
-#if AUXOUTPUT1_PWM_TIMER_N == 1
-        AUXOUTPUT1_PWM_TIMER->BDTR |= TIM_BDTR_OSSR|TIM_BDTR_OSSI;
-#endif
-        if(config->invert) {
-            AUXOUTPUT1_PWM_TIMER->CCER |= AUXOUTPUT1_PWM_CCER_POL;
-            AUXOUTPUT1_PWM_TIMER->CR2 |= AUXOUTPUT1_PWM_CR2_OIS;
-        } else {
-            AUXOUTPUT1_PWM_TIMER->CCER &= ~AUXOUTPUT1_PWM_CCER_POL;
-            AUXOUTPUT1_PWM_TIMER->CR2 &= ~AUXOUTPUT1_PWM_CR2_OIS;
-        }
-        AUXOUTPUT1_PWM_TIMER->CCER |= AUXOUTPUT1_PWM_CCER_EN;
-        AUXOUTPUT1_PWM_TIMER->CR1 |= TIM_CR1_CEN;
-
-        aux_out_analog[ch].mode.pwm = !config->servo_mode;
-        aux_out_analog[ch].mode.servo_pwm = config->servo_mode;
-
-        pwm1_out(ch, config->min);
-    }
-
-    return ok;
-}
-
-#endif // AUXOUTPUT1_PWM_PORT_BASE
-=======
 static bool init_pwm (xbar_t *output, pwm_config_t *config, bool persistent)
 {
     bool ok;
@@ -480,7 +217,6 @@ static float analog_in_state (xbar_t *input)
 
     return value;
 }
->>>>>>> upstream/master
 
 static int32_t wait_on_input_dummy (io_port_type_t type, uint8_t port, wait_mode_t wait_mode, float timeout)
 {
@@ -520,57 +256,6 @@ static xbar_t *get_pin_info (io_port_type_t type, io_port_direction_t dir, uint8
 
     else {
 
-<<<<<<< HEAD
-        case Port_Input:
-            if(port < analog.in.n_ports) {
-                port = ioports_map(analog.in, port);
-#ifdef MCP3221_ENABLE
-                if(port == analog_in.pin)
-                    info = &analog_in;
-                else
-#endif
-                {
-                    pin.mode = aux_in_analog[port].mode;
-                    pin.cap = aux_in_analog[port].cap;
-                    pin.cap.claimable = !pin.mode.claimed;
-                    pin.function = aux_in_analog[port].id;
-                    pin.group = aux_in_analog[port].group;
-                    pin.pin = aux_in_analog[port].pin;
-                    pin.bit = 1 << aux_in_analog[port].pin;
-                    pin.port = (void *)aux_in_analog[port].port;
-                    pin.description = aux_in_analog[port].description;
-                    info = &pin;
-                }
-            }
-            break;
-
-        case Port_Output:
-#if AUX_ANALOG_OUT
-            memset(&pin, 0, sizeof(xbar_t));
-
-            if(port < analog.out.n_ports) {
-                port = ioports_map(analog.out, port);
-                pin.mode = aux_out_analog[port].mode;
-                pin.mode.pwm = !pin.mode.servo_pwm; //?? for easy filtering
-                XBAR_SET_CAP(pin.cap, pin.mode);
-                pin.function = aux_out_analog[port].id;
-                pin.group = aux_out_analog[port].group;
-                pin.pin = aux_out_analog[port].pin;
-                pin.bit = 1 << aux_out_analog[port].pin;
-                pin.port = (void *)aux_out_analog[port].port;
-                pin.description = aux_out_analog[port].description;
-                pin.get_value = pwm_get_value;
-    #ifdef AUXOUTPUT0_PWM_PORT_BASE
-                if(pin.port == AUXOUTPUT0_PWM_PORT && pin.pin == AUXOUTPUT0_PWM_PIN)
-                    pin.config = (xbar_config_ptr)init_pwm0;
-    #endif
-    #ifdef AUXOUTPUT1_PWM_PORT_BASE
-                if(pin.port == AUXOUTPUT1_PWM_PORT && pin.pin == AUXOUTPUT1_PWM_PIN)
-                    pin.config = (xbar_config_ptr)init_pwm1;
-    #endif
-                info = &pin;
-            }
-=======
         memset(&pin, 0, sizeof(xbar_t));
 
         switch(dir) {
@@ -614,7 +299,6 @@ static xbar_t *get_pin_info (io_port_type_t type, io_port_direction_t dir, uint8
                     pin.config = init_pwm;
                     info = &pin;
                 }
->>>>>>> upstream/master
 #endif // AUX_ANALOG_OUT
                 break;
         }
@@ -853,11 +537,7 @@ void ioports_init_analog (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_ou
 
             for(i = 0; i < analog.out.n_ports; i++) {
                 if((pin = get_pin_info(Port_Analog, Port_Output, i)))
-<<<<<<< HEAD
-                    pin->config(pin, &config);
-=======
                     pin->config(pin, &config, false);
->>>>>>> upstream/master
             }
         }
 

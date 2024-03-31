@@ -98,10 +98,7 @@
 //#define TRINAMIC_ENABLE   2130 // Trinamic TMC2130 stepper driver support.
 //#define TRINAMIC_ENABLE   5160 // Trinamic TMC5160 stepper driver support.
 //#define TRINAMIC_ENABLE   2209 // Trinamic TMC2209 stepper driver support.
-<<<<<<< HEAD
-=======
 //#define TRINAMIC_ENABLE   2660 // Trinamic TMC2660 stepper driver support.
->>>>>>> upstream/master
 //#define TRINAMIC_R_SENSE   110 // R sense resistance in milliohms, 2130 and 2209 default is 110, 5160 is 75.
 //#define TRINAMIC_I2C         1 // Trinamic I2C - SPI bridge interface.
 //#define TRINAMIC_DEV         1 // Development mode, adds a few M-codes to aid debugging. Do not enable in production code.

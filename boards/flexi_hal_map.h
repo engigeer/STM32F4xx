@@ -83,21 +83,6 @@
 #define DIRECTION_OUTMODE       GPIO_BITBAND
 
 // Define stepper driver enable/disable output pin.
-<<<<<<< HEAD
-#ifdef ENABLE_SWD
-//#define STEPPERS_ENABLE_PORT       GPIOB
-//#define STEPPERS_ENABLE_PIN        13
-#define STEPPERS_ENABLE_OUTMODE    GPIO_BITBAND
-#else
-#define X_ENABLE_PORT               GPIOA
-#define X_ENABLE_PIN                14
-#define Y_ENABLE_PORT               GPIOA
-#define Y_ENABLE_PIN                14
-#define Z_ENABLE_PORT               GPIOA
-#define Z_ENABLE_PIN                13
-#define STEPPERS_ENABLE_OUTMODE    GPIO_BITBAND
-#endif
-=======
 #define X_ENABLE_PORT           GPIOA
 #define X_ENABLE_PIN            14
 #define Y_ENABLE_PORT           GPIOA
@@ -105,7 +90,6 @@
 #define Z_ENABLE_PORT           GPIOA
 #define Z_ENABLE_PIN            13
 #define STEPPERS_ENABLE_OUTMODE GPIO_BITBAND
->>>>>>> upstream/master
 
 // Define homing/hard limit switch input pins.
 #define X_LIMIT_PORT            GPIOA
@@ -150,65 +134,14 @@
 #define M4_ENABLE_PORT          GPIOA
 #define M4_ENABLE_PIN           14
 #endif
-<<<<<<< HEAD
 #endif
-
-// Define spindle enable and spindle direction output pins.
-#define SPINDLE_ENABLE_PORT     GPIOB
-#define SPINDLE_ENABLE_PIN      2
-#define SPINDLE_DIRECTION_PORT  GPIOB
-#define SPINDLE_DIRECTION_PIN   1
-#define SPINDLE_OUTMODE         GPIO_BITBAND
-
-// Define spindle PWM output pin.
-#define SPINDLE_PWM_PORT_BASE   GPIOA_BASE
-#define SPINDLE_PWM_PIN         8
-
-// Define flood and mist coolant enable output pins.
-// #define COOLANT_FLOOD_PORT      GPIOC
-// #define COOLANT_FLOOD_PIN       9
-// #define COOLANT_MIST_PORT       GPIOA
-// #define COOLANT_MIST_PIN        7
-#define COOLANT_FLOOD_PORT      GPIOA
-#define COOLANT_FLOOD_PIN       4
-#define COOLANT_MIST_PORT       GPIOA
-#define COOLANT_MIST_PIN        6
-#define COOLANT_OUTMODE         GPIO_BITBAND
-=======
->>>>>>> upstream/master
 
 #define AUXOUTPUT0_PORT         GPIOB
 #define AUXOUTPUT0_PIN          13
 #define AUXOUTPUT1_PORT         GPIOB
 #define AUXOUTPUT1_PIN          0
-<<<<<<< HEAD
-// #define AUXOUTPUT2_PORT         GPIOA
-// #define AUXOUTPUT2_PIN          4
-// #define AUXOUTPUT3_PORT         GPIOA
-// #define AUXOUTPUT3_PIN          6
-#define AUXOUTPUT2_PORT            GPIOC
-#define AUXOUTPUT2_PIN             9
-#define AUXOUTPUT0_PWM_PORT_BASE        GPIOA_BASE
-#define AUXOUTPUT0_PWM_PIN              7
-
-#if N_ABC_MOTORS != 2
-// #define AUXOUTPUT1_PWM_PORT_BASE        GPIOB_BASE
-// #define AUXOUTPUT1_PWM_PIN              14
-  #define AUXOUTPUT6_PORT       GPIOB
-  #define AUXOUTPUT6_PIN        14
-  #define AUXOUTPUT7_PORT       GPIOB
-  #define AUXOUTPUT7_PIN        15  
-#endif
-#if N_ABC_MOTORS < 1
-  #define AUXOUTPUT4_PORT       GPIOD
-  #define AUXOUTPUT4_PIN        2
-  #define AUXOUTPUT5_PORT       GPIOC
-  #define AUXOUTPUT5_PIN        12
-#endif
-#define AUXOUTPUT_OUTMODE       GPIO_BITBAND
-=======
 #define AUXOUTPUT2_PORT         GPIOA
-#define AUXOUTPUT2_PIN          4
+#define AUXOUTPUT2_PIN          9
 #define AUXOUTPUT3_PORT         GPIOA
 #define AUXOUTPUT3_PIN          6
 #define AUXOUTPUT4_PORT         GPIOA // Spindle PWM
@@ -234,11 +167,10 @@
 
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_PORT      GPIOC
-#define COOLANT_FLOOD_PIN       9
+#define COOLANT_FLOOD_PIN       4
 #define COOLANT_MIST_PORT       GPIOA
-#define COOLANT_MIST_PIN        7
+#define COOLANT_MIST_PIN        6
 #define COOLANT_OUTMODE         GPIO_BITBAND
->>>>>>> upstream/master
 
 #define AUXINPUT0_PORT          GPIOA
 #define AUXINPUT0_PIN           0
@@ -246,21 +178,12 @@
 #define AUXINPUT1_PIN           1
 #define AUXINPUT2_PORT          GPIOA
 #define AUXINPUT2_PIN           2
-<<<<<<< HEAD
-
-#if N_ABC_MOTORS != 2
-  #define AUXINPUT3_PORT          GPIOC
-  #define AUXINPUT3_PIN           14
-#endif
-
-=======
 #define AUXINPUT3_PORT          GPIOC // Safety door
 #define AUXINPUT3_PIN           4
 #define AUXINPUT4_PORT          GPIOB // Probe input
 #define AUXINPUT4_PIN           7
 #define AUXINPUT5_PORT          GPIOB // I2C strobe input
 #define AUXINPUT5_PIN           10
->>>>>>> upstream/master
 
 // Define user-control controls (cycle start, reset, feed hold) input pins.
 #define RESET_PORT              GPIOB
@@ -269,9 +192,6 @@
 #define FEED_HOLD_PIN           8
 #define CYCLE_START_PORT        GPIOC
 #define CYCLE_START_PIN         11
-
-#define AUXINPUT4_PORT          GPIOC
-#define AUXINPUT4_PIN           4
 
 #if PROBE_ENABLE
 #define PROBE_PORT              AUXINPUT4_PORT
@@ -285,16 +205,10 @@
 
 #define CONTROL_INMODE          GPIO_BITBAND
 
-<<<<<<< HEAD
-// Define probe input pin.
-#define PROBE_PORT              GPIOB
-#define PROBE_PIN               7
-=======
 #if MOTOR_WARNING_ENABLE
 #define MOTOR_WARNING_PORT      AUXINPUT2_PORT
 #define MOTOR_WARNING_PIN       AUXINPUT2_PIN
 #endif
->>>>>>> upstream/master
 
 #if I2C_STROBE_ENABLE
 #define I2C_STROBE_PORT         AUXINPUT5_PORT
