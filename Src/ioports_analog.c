@@ -522,12 +522,15 @@ void ioports_init_analog (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_ou
             uint_fast8_t i;
             pwm_config_t config = {
                 .freq_hz = 5000.0f,
-                .min = 0.0f,
-                .max = 100.0f,
+                .min = 10.0f,
+                .max = 80.0f,
                 .off_value = 0.0f,
                 .min_value = 0.0f,
                 .max_value = 100.0f,
-                .invert = Off
+                .quadratic = 0.0031f,
+                .linear = 0.841f,
+                .constant = 3.493f, //negative! (but negative numbers are not accepted)
+                .invert = On
             };
 
             hal.port.analog_out = analog_out;
