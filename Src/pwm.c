@@ -32,12 +32,12 @@ typedef struct {
 // .en = timerCCEN(CH, ), .pol = timerCCP(CH, ), .ois = timerCR2OIS(CH, ), .ocm = timerOCM(CCR, CH), .ocmc = timerOCM(CCR, CH)
 
 static const pwm_signal_t pwm_pin[] = {
-#if !ETHERNET_ENABLE
-    {
-        .port = GPIOA, .pin = 7, .timer = timer(1), .ccr = &timerCCR(1, 1), .ccmr = &timerCCMR(1, 1), .af = timerAF(1, 1),
-        .en = timerCCEN(1, N), .pol = timerCCP(1, N), .ois = timerCR2OIS(1, N), .ocm = timerOCM(1, 1), .ocmc = timerOCM(1, 1)
-    },
-#endif
+// #if !ETHERNET_ENABLE
+//     {
+//         .port = GPIOA, .pin = 7, .timer = timer(1), .ccr = &timerCCR(1, 1), .ccmr = &timerCCMR(1, 1), .af = timerAF(1, 1),
+//         .en = timerCCEN(1, N), .pol = timerCCP(1, N), .ois = timerCR2OIS(1, N), .ocm = timerOCM(1, 1), .ocmc = timerOCM(1, 1)
+//     },
+// #endif
     {
         .port = GPIOA, .pin = 8, .timer = timer(1), .ccr = &timerCCR(1, 1), .ccmr = &timerCCMR(1, 1), .af = timerAF(1, 1),
         .en = timerCCEN(1, ), .pol = timerCCP(1, ), .ois = timerCR2OIS(1, ), .ocm = timerOCM(1, 1), .ocmc = timerOCM(1, 1)
@@ -76,6 +76,10 @@ static const pwm_signal_t pwm_pin[] = {
     {
         .port = GPIOC, .pin = 6, .timer = timer(3), .ccr = &timerCCR(3, 1), .ccmr = &timerCCMR(3, 1), .af = timerAF(3, 2),
         .en = timerCCEN(1, ), .pol = timerCCP(1, ), .ois = timerCR2OIS(3, ), .ocm = timerOCM(1, 1), .ocmc = timerOCM(1, 1)
+    },
+    {
+        .port = GPIOA, .pin = 7, .timer = timer(3), .ccr = &timerCCR(3, 2), .ccmr = &timerCCMR(3, 1), .af = timerAF(3, 2),
+        .en = timerCCEN(2, ), .pol = timerCCP(2, ), .ois = timerCR2OIS(2, ), .ocm = timerOCM(1, 2), .ocmc = timerOCM(1, 2)
     },
     {
         .port = GPIOC, .pin = 8, .timer = timer(3), .ccr = &timerCCR(3, 3), .ccmr = &timerCCMR(3, 2), .af = timerAF(3, 2),

@@ -148,10 +148,10 @@
 #define AUXOUTPUT0_PIN          13
 #define AUXOUTPUT1_PORT         GPIOB
 #define AUXOUTPUT1_PIN          0
-#define AUXOUTPUT2_PORT         GPIOA
-#define AUXOUTPUT2_PIN          4
-#define AUXOUTPUT3_PORT         GPIOA
-#define AUXOUTPUT3_PIN          6
+#define AUXOUTPUT2_PORT         GPIOC
+#define AUXOUTPUT2_PIN          9
+//#define AUXOUTPUT3_PORT         GPIOA // Analog / PWM OUT (TBD Implementation below, might not need to comment out?)
+//#define AUXOUTPUT3_PIN          7
 #define AUXOUTPUT4_PORT         GPIOA // Spindle PWM
 #define AUXOUTPUT4_PIN          8
 #define AUXOUTPUT5_PORT         GPIOB // Spindle direction
@@ -159,6 +159,9 @@
 #define AUXOUTPUT6_PORT         GPIOB // Spindle enable
 #define AUXOUTPUT6_PIN          2
 
+// Define analog output pins
+#define AUXOUTPUT0_PWM_PORT     GPIOA
+#define AUXOUTPUT0_PWM_PIN      7
 
 // Define driver spindle pins
 #if DRIVER_SPINDLE_ENABLE
@@ -174,10 +177,10 @@
 #endif //DRIVER_SPINDLE_ENABLE
 
 // Define flood and mist coolant enable output pins.
-#define COOLANT_FLOOD_PORT      GPIOC
-#define COOLANT_FLOOD_PIN       9
+#define COOLANT_FLOOD_PORT      GPIOA
+#define COOLANT_FLOOD_PIN       4
 #define COOLANT_MIST_PORT       GPIOA
-#define COOLANT_MIST_PIN        7
+#define COOLANT_MIST_PIN        6
 #define COOLANT_OUTMODE         GPIO_BITBAND
 
 #define AUXINPUT0_PORT          GPIOA
