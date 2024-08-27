@@ -172,8 +172,8 @@
 #define SPINDLE_PWM_PIN         AUXOUTPUT4_PIN
 #endif
 // Define spindle enable and spindle direction output pins.
-#define SPINDLE_DIRECTION_PORT  AUXOUTPUT5_PORT
-#define SPINDLE_DIRECTION_PIN   AUXOUTPUT5_PIN
+//#define SPINDLE_DIRECTION_PORT  AUXOUTPUT5_PORT
+//#define SPINDLE_DIRECTION_PIN   AUXOUTPUT5_PIN
 #endif //DRIVER_SPINDLE_ENABLE
 
 // Define flood and mist coolant enable output pins.
