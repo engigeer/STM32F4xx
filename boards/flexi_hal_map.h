@@ -189,10 +189,10 @@
 #define AUXINPUT1_PIN           1
 #define AUXINPUT2_PORT          GPIOA
 #define AUXINPUT2_PIN           2
-#define AUXINPUT3_PORT          GPIOC // Safety door
-#define AUXINPUT3_PIN           4
-#define AUXINPUT4_PORT          GPIOB // Probe input
-#define AUXINPUT4_PIN           7
+#define AUXINPUT3_PORT          GPIOB // Probe input
+#define AUXINPUT3_PIN           7
+#define AUXINPUT4_PORT          GPIOC // Safety door
+#define AUXINPUT4_PIN           4
 #define AUXINPUT5_PORT          GPIOB // I2C strobe input
 #define AUXINPUT5_PIN           10
 
@@ -210,14 +210,14 @@
 #define CYCLE_START_PORT        GPIOC
 #define CYCLE_START_PIN         11
 
-#if PROBE_ENABLE
-#define PROBE_PORT              AUXINPUT4_PORT
-#define PROBE_PIN               AUXINPUT4_PIN
+#if SAFETY_DOOR_ENABLE
+#define SAFETY_DOOR_PORT        AUXINPUT4_PORT
+#define SAFETY_DOOR_PIN         AUXINPUT4_PIN  
 #endif
 
-#if SAFETY_DOOR_ENABLE
-#define SAFETY_DOOR_PORT        AUXINPUT3_PORT
-#define SAFETY_DOOR_PIN         AUXINPUT3_PIN  
+#if PROBE_ENABLE
+#define PROBE_PORT              AUXINPUT3_PORT
+#define PROBE_PIN               AUXINPUT3_PIN
 #endif
 
 #define CONTROL_INMODE          GPIO_BITBAND
