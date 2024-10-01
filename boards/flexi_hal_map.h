@@ -19,7 +19,7 @@
   along with GrblHAL. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if N_ABC_MOTORS > 2
+#if N_ABC_MOTORS > 1
 #error "Axis configuration is not supported!"
 #endif
 
@@ -127,22 +127,22 @@
 #endif
 
 // Define ganged axis or A axis step pulse and step direction output pins.
-#if N_ABC_MOTORS == 2
-#define M4_AVAILABLE
-#define M4_STEP_PORT            GPIOB
-#define M4_STEP_PIN             14
-#define M4_DIRECTION_PORT       GPIOB
-#define M4_DIRECTION_PIN        15
-#define M4_LIMIT_PORT           GPIOC
-#define M4_LIMIT_PIN            14
-#ifdef ENABLE_SWD
-#define M3_ENABLE_PORT          GPIOB
-#define M3_ENABLE_PIN           13
-#else
-#define M4_ENABLE_PORT          GPIOA
-#define M4_ENABLE_PIN           14
-#endif
-#endif
+// #if N_ABC_MOTORS == 2
+// #define M4_AVAILABLE
+// #define M4_STEP_PORT            GPIOB
+// #define M4_STEP_PIN             14
+// #define M4_DIRECTION_PORT       GPIOB
+// #define M4_DIRECTION_PIN        15
+// #define M4_LIMIT_PORT           GPIOC
+// #define M4_LIMIT_PIN            14
+// #ifdef ENABLE_SWD
+// #define M3_ENABLE_PORT          GPIOB
+// #define M3_ENABLE_PIN           13
+// #else
+// #define M4_ENABLE_PORT          GPIOA
+// #define M4_ENABLE_PIN           14
+// #endif
+// #endif
 
 #define AUXOUTPUT0_PORT         GPIOB
 #define AUXOUTPUT0_PIN          13
@@ -171,6 +171,15 @@
 // Define spindle enable and spindle direction output pins.
 #define SPINDLE_DIRECTION_PORT  AUXOUTPUT5_PORT
 #define SPINDLE_DIRECTION_PIN   AUXOUTPUT5_PIN
+#endif //DRIVER_SPINDLE_ENABLE
+
+// Define driver spindle 1 pins (TEMPORARY ASSIGNMENT TO THE SAME PINS AS STEP/DIR FOR M4)
+#if DRIVER_SPINDLE1_ENABLE
+#define SPINDLE1_ENABLE_PORT    GPIOB
+#define SPINDLE1_ENABLE_PIN     14
+// Define spindle enable and spindle direction output pins.
+#define SPINDLE1_DIRECTION_PORT GPIOB
+#define SPINDLE1_DIRECTION_PIN  15
 #endif //DRIVER_SPINDLE_ENABLE
 
 // Define flood and mist coolant enable output pins.

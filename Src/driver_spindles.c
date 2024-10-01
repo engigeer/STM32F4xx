@@ -262,7 +262,7 @@ static pwm_signal_t spindle1_timer = {0};
 
 inline static void spindle1_off (void)
 {
-#ifdef SPINDLE_ENABLE_PIN
+#ifdef SPINDLE1_ENABLE_PIN
     DIGITAL_OUT(SPINDLE1_ENABLE_PORT, SPINDLE1_ENABLE_PIN, spindle_config->cfg.invert.on);
 #endif
 }
