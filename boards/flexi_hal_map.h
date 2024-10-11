@@ -159,6 +159,13 @@
 #define AUXOUTPUT6_PORT         GPIOB // Spindle enable
 #define AUXOUTPUT6_PIN          2
 
+#ifndef M4_AVAILABLE
+#define AUXOUTPUT7_PORT         GPIOB // Rotary CW
+#define AUXOUTPUT7_PIN          14
+#define AUXOUTPUT8_PORT         GPIOB // Rotary CCW
+#define AUXOUTPUT8_PIN          15
+#endif
+
 // Define analog output pins
 #define AUXOUTPUT0_PWM_PORT     GPIOA
 #define AUXOUTPUT0_PWM_PIN      7
