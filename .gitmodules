@@ -49,6 +49,9 @@
 [submodule "plugins"]
 	path = plugins
 	url = https://github.com/grblHAL/Plugins_misc/
+[submodule "picohal"]
+	path = picohal
+	url = https://github.com/engigeer/Plugin_picohal
 [submodule "openpnp"]
 	path = openpnp
 	url = https://github.com/grblHAL/Plugin_OpenPNP/
