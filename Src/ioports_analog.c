@@ -35,7 +35,13 @@
 #define PWM_OUT1 0
 #endif
 
-#define AUX_ANALOG_OUT (PWM_OUT0 + PWM_OUT1)
+#ifdef AUXOUTPUT2_PWM_PORT
+#define PWM_OUT2 1
+#else
+#define PWM_OUT1 0
+#endif
+
+#define AUX_ANALOG_OUT (PWM_OUT0 + PWM_OUT1 + PWM_OUT2)
 
 #include "pwm.h"
 
@@ -362,7 +368,7 @@ void ioports_init_analog (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_ou
             xbar_t *pin;
             uint_fast8_t i;
             pwm_config_t config = {
-                .freq_hz = 5000.0f,
+                .freq_hz = 250.0f,
                 .min = 0.0f,
                 .max = 100.0f,
                 .off_value = 0.0f,
