@@ -368,7 +368,7 @@ void ioports_init_analog (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_ou
             xbar_t *pin;
             uint_fast8_t i;
             pwm_config_t config = {
-                .freq_hz = 250.0f,
+                .freq_hz = 5000.0f,
                 .min = 0.0f,
                 .max = 100.0f,
                 .off_value = 0.0f,
