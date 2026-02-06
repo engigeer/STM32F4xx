@@ -93,19 +93,19 @@
 #define DIRECTION_OUTMODE       GPIO_BITBAND
 
 // Define stepper driver enable/disable output pin.
-#ifdef ENABLE_SWD
-#define STEPPERS_ENABLE_PORT       GPIOB
-#define STEPPERS_ENABLE_PIN        13
-#define STEPPERS_ENABLE_OUTMODE    GPIO_BITBAND
-#else
-#define X_ENABLE_PORT               GPIOA
-#define X_ENABLE_PIN                14
-#define Y_ENABLE_PORT               GPIOA
-#define Y_ENABLE_PIN                14
-#define Z_ENABLE_PORT               GPIOA
-#define Z_ENABLE_PIN                13
-#define STEPPERS_ENABLE_OUTMODE    GPIO_BITBAND
-#endif
+// #ifdef ENABLE_SWD
+// #define STEPPERS_ENABLE_PORT       GPIOB
+// #define STEPPERS_ENABLE_PIN        13
+// #define STEPPERS_ENABLE_OUTMODE    GPIO_BITBAND
+// #else
+// #define X_ENABLE_PORT               GPIOA
+// #define X_ENABLE_PIN                14
+// #define Y_ENABLE_PORT               GPIOA
+// #define Y_ENABLE_PIN                14
+// #define Z_ENABLE_PORT               GPIOA
+// #define Z_ENABLE_PIN                13
+// #define STEPPERS_ENABLE_OUTMODE    GPIO_BITBAND
+// #endif
 
 // Define homing/hard limit switch input pins.
 #define X_LIMIT_PORT            GPIOA
@@ -129,13 +129,13 @@
 // #define M3_LIMIT_PORT           GPIOB
 // #define M3_LIMIT_PIN            6
 
-#ifdef ENABLE_SWD
-#define M3_ENABLE_PORT          GPIOB
-#define M3_ENABLE_PIN           13
-#else
-#define M3_ENABLE_PORT          GPIOA
-#define M3_ENABLE_PIN           14
-#endif
+// #ifdef ENABLE_SWD
+// #define M3_ENABLE_PORT          GPIOB
+// #define M3_ENABLE_PIN           13
+// #else
+// #define M3_ENABLE_PORT          GPIOA
+// #define M3_ENABLE_PIN           14
+// #endif
 #endif
 
 // Define ganged axis or A axis step pulse and step direction output pins.
@@ -148,13 +148,13 @@
 // #define M4_LIMIT_PORT           GPIOC
 // #define M4_LIMIT_PIN            14
 
-#ifdef ENABLE_SWD
-#define M3_ENABLE_PORT          GPIOB
-#define M3_ENABLE_PIN           13
-#else
-#define M4_ENABLE_PORT          GPIOA
-#define M4_ENABLE_PIN           14
-#endif
+// #ifdef ENABLE_SWD
+// #define M3_ENABLE_PORT          GPIOB
+// #define M3_ENABLE_PIN           13
+// #else
+// #define M4_ENABLE_PORT          GPIOA
+// #define M4_ENABLE_PIN           14
+// #endif
 #endif
 
 #define AUXOUTPUT0_PORT         GPIOB
